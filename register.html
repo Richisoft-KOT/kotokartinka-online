@@ -51,7 +51,8 @@
       }
 
       // Сохраняем нового юзера
-      users.push({ username: user, password: pass });
+      users.push({ id: users.length + 1, username: user, password: pass });
+
       localStorage.setItem('koto_users', JSON.stringify(users));
 
       alert('регистрация успешна! теперь войди в аккаунт и запиши пароль!');

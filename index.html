@@ -36,7 +36,7 @@
 
     if (currentUser) {
       // Если пользователь вошел в аккаунт
-      statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/editor.html"><b>создать котокартинку</b></a> | <a href="#" id="logout-link">ыыйти</a>';
+      statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/editor.html"><b>создать котокартинку</b></a> | <a href="#" id="logout-link">выйти</a>';
       
       document.getElementById('logout-link').onclick = function(e) {
         e.preventDefault();
@@ -46,7 +46,7 @@
       };
     } else {
       // Если пользователь не авторизован
-      statusTd.innerHTML = 'ты вошел как: <b>Гость</b> | <a href="/login.html"><b>Вход</b></a> | <a href="/register.html"><b>Регистрация</b></a>';
+      statusTd.innerHTML = 'ты не вошел <b>.</b> | <a href="/login.html"><b>Вход</b></a> | <a href="/register.html"><b>Регистрация</b></a>';
     }
   })();
 </script>
@@ -58,7 +58,7 @@
 https://t.me/KotokartinkaMEMES <a href="https://t.me/KotokartinkaMEMES" target="_blank" class="my-button">зайти!</a><br>
 <br>
 также можно смотреть котокартинки прямо на сайте <a href="/kotokartinki.html">смотреть котокартинки</a><br>
-а также можно создать свою котоматрицу прямо на сайте <a href="/editor.html">создать котокартинку</a><br>
+а также можно создать свою котоматрицу прямо на сайте, для этого нужно зарегестрироватся или войти
 <img width="44" height="26" alt="telephone" src="https://github.com/user-attachments/assets/b7be2a40-10ef-4884-baa5-275911c51290" /><br>
 контакты владельца:<br>
 телеграм:t.me/Meme_Richards<br>

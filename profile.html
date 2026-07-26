@@ -3,23 +3,24 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: личный кабинет</title>
+  <title>КОТОКАРТИНКА: Личный кабинет</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
   <a href="/index.html">На главную</a> | <a href="/editor.html">В редактор</a><br><br>
 
-  <font face="arial" size="5"><b>ЛИЧНЫЙ КАБИНЕТ</b></font><br><br>
+  <font face="arial" size="5"><b>ЛИЧНЫЙ КАБИНЕТ КОТОКАРТИНЩИКА</b></font><br><br>
 
   <!-- Блок информации о пользователе -->
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="font-family: arial; font-size: 14px;">
     <tr>
-      <td bgcolor="#ff9900"><font color="#ffffff"><b>твой профиль</b></font></td>
+      <td bgcolor="#ff9900"><font color="#ffffff"><b>Твой профиль</b></font></td>
     </tr>
     <tr>
       <td>
-        логин: <b id="profile-username">Гость</b><br><br>
-        всего создано котокартинок: <b id="profile-count">0</b>
+        Логин: <b id="profile-username">Гость</b><br>
+        Твой уникальный ID: <b id="profile-id">1</b><br><br>
+        Всего создано котокартинок: <b id="profile-count">0</b>
       </td>
     </tr>
   </table>
@@ -28,29 +29,47 @@
   <font face="arial" size="4"><b>Мои опубликованные творения:</b></font>
   <br><br>
 
-  <!-- Сюда выводятся только мемы текущего пользователя -->
   <div id="my-posts-container"></div>
 
   <script>
-    // Проверяем авторизацию
     var currentUser = localStorage.getItem('koto_current_user');
     if (!currentUser) {
-      alert('вход не выполнен!');
+      alert('Вход не выполнен! Доступ закрыт.');
       window.location.href = '/login.html';
     }
 
-    // Выводим имя
     document.getElementById('profile-username').innerText = currentUser;
 
+    // Читаем базу пользователей для вывода ID
+    var users = JSON.parse(localStorage.getItem('koto_users') || '[]');
+    var currentUserId = 1; 
+
+    // Ищем текущего юзера в базе
+    var foundUserIndex = users.findIndex(function(u) {
+      return u.username.toLowerCase() === currentUser.toLowerCase();
+    });
+
+    if (foundUserIndex !== -1) {
+      // ИСПРАВЛЕНИЕ СТАРЫХ АККАУНТОВ: Если у юзера еще нет ID (твой первый аккаунт),
+      // то присваиваем ему ID на основе его индекса в массиве (+1) и сохраняем обратно
+      if (!users[foundUserIndex].id) {
+        users[foundUserIndex].id = foundUserIndex + 1;
+        localStorage.setItem('koto_users', JSON.stringify(users));
+      }
+      currentUserId = users[foundUserIndex].id;
+    }
+
+    // Выводим ID на экран
+    document.getElementById('profile-id').innerText = currentUserId;
+
+    // Вывод постов текущего пользователя
     var container = document.getElementById('my-posts-container');
     var posts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
     
-    // Фильтруем общую ленту постов, оставляя только посты текущего юзера
     var myPosts = posts.filter(function(post) {
       return post.author === currentUser;
     });
 
-    // Выводим количество
     document.getElementById('profile-count').innerText = myPosts.length;
 
     if (myPosts.length === 0) {

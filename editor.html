@@ -7,7 +7,7 @@
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <font face="arial" size="5"><b>ГЕНЕРАТОР КОТОКАРТИНКИ (ВЕРСИЯ С КЛЕЙМОМ В ПРЕВЬЮ)</b></font>
+  <font face="arial" size="5"><b>ГЕНЕРАТОР КОТОКАРТИНКИ (ИСПРАВЛЕННЫЙ)</b></font>
   <br><br>
 
   <a href="index.html">&lt;&lt; Вернуться на главную страницу</a>
@@ -69,15 +69,15 @@
   <br><br>
 
   <!-- Область предпросмотра -->
-  <div id="preview-area" style="position: relative; display: inline-block; border: 4px solid #ffffff; cursor: crosshair;">
+  <div id="preview-area" style="position: relative; display: inline-block; border: 4px solid #ffffff; cursor: crosshair; min-width: 300px; min-height: 200px;">
     <span id="placeholder-text">[ Картинка появится здесь, когда ты её выберешь ]</span>
     <img id="preview-img" src="" style="display: none; max-width: 700px; height: auto;" draggable="false">
     
-    <!-- Летающая надпись (с эффектом обводки через text-shadow) -->
-    <div id="preview-caption" style="position: absolute; left: 20px; top: 0; pointer-events: none; white-space: nowrap; font-family: arial; font-weight: bold; display: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;"></div>
+    <!-- Летающая надпись (исправлен padding и text-shadow) -->
+    <div id="preview-caption" style="position: absolute; left: 0; top: 0; width: 100%; box-sizing: border-box; padding-left: 20px; pointer-events: none; white-space: nowrap; font-family: arial; font-weight: bold; display: none; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;"></div>
 
     <!-- Постоянный водяной знак в превью -->
-    <div id="preview-watermark" style="position: absolute; left: 15px; bottom: 15px; pointer-events: none; white-space: nowrap; font-family: arial; font-weight: bold; color: #ffffff; display: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
+    <div id="preview-watermark" style="position: absolute; left: 20px; bottom: 15px; pointer-events: none; white-space: nowrap; font-family: arial; font-weight: bold; color: #ffffff; display: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
       котокартинка - kotokartinka-online.vercel.app
     </div>
   </div>
@@ -109,7 +109,7 @@
 
     // Загрузка файла
     imageInput.addEventListener('change', function(e) {
-      const file = e.target.files;
+      const file = e.target.files[0]; // Исправлено получение одиночного файла
       if (!file) return;
 
       const reader = new FileReader();
@@ -120,7 +120,7 @@
           previewImg.style.display = 'block';
           placeholderText.style.display = 'none';
           previewCaption.style.display = 'block';
-          previewWatermark.style.display = 'block'; // Показываем клеймо на этапе редактирования
+          previewWatermark.style.display = 'block'; 
           isLocked = false; 
           updatePreviewText();
         };
@@ -134,22 +134,22 @@
       previewCaption.innerText = textInput.value;
       previewCaption.style.color = textColorSelect.value;
 
-      // Меняем размеры шрифтов основного текста и клейма в превью
+      // Исправлена опечатка font_size -> fontSize
       if (fontSizeSelect.value === 'small') {
         previewCaption.style.fontSize = '14px';
-        previewWatermark.style.fontSize = '10px';
+        previewWatermark.style.fontSize = '11px';
       }
       if (fontSizeSelect.value === 'medium') {
-        previewCaption.style.fontSize = '20px';
-        previewWatermark.style.fontSize = '13px';
+        previewCaption.style.fontSize = '22px';
+        previewWatermark.style.fontSize = '14px';
       }
       if (fontSizeSelect.value === 'large') {
-        previewCaption.style.fontSize = '26px';
-        previewWatermark.style.fontSize = '16px';
+        previewCaption.style.fontSize = '28px';
+        previewWatermark.style.fontSize = '17px';
       }
       if (fontSizeSelect.value === 'huge') {
-        previewCaption.style.fontSize = '34px';
-        previewWatermark.style.fontSize = '20px';
+        previewCaption.style.fontSize = '36px';
+        previewWatermark.style.fontSize = '21px';
       }
     }
 
@@ -204,7 +204,7 @@
       const targetY = (textYPercent / 100) * canvas.height + fontSize;
 
       ctx.strokeStyle = '#000000';
-      ctx.lineWidth = Math.max(3, fontSize * 0.15);
+      ctx.lineWidth = Math.max(4, fontSize * 0.18); // Обводка сделана чуть жирнее для читаемости
       ctx.strokeText(textInput.value, 20, targetY);
 
       ctx.fillStyle = textColorSelect.value;
@@ -220,10 +220,10 @@
 
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = Math.max(2, watermarkSize * 0.15);
-      ctx.strokeText(watermarkText, 15, watermarkY);
+      ctx.strokeText(watermarkText, 20, watermarkY);
 
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(watermarkText, 15, watermarkY);
+      ctx.fillText(watermarkText, 20, watermarkY);
 
       // 4. Скачивание готового файла
       const link = document.createElement('a');

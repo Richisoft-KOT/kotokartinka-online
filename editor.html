@@ -3,153 +3,68 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: Создать мем</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 0 20px;
-      background-color: #fff2e3;
-      color: #333;
-    }
-    h1 {
-      color: #d35400;
-      text-align: center;
-    }
-    .editor-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
-    }
-    /* Панель управления */
-    .controls {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-      box-sizing: border-box;
-    }
-    .control-group {
-      margin-bottom: 15px;
-    }
-    .control-group label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .control-group input[type="text"], 
-    .control-group input[type="file"] {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    /* Кнопки */
-    .btn {
-      display: inline-block;
-      background-color: #ff9900;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
-      text-align: center;
-    }
-    .btn:hover {
-      background-color: #e68a00;
-    }
-    /* Область предпросмотра */
-    .preview-box {
-      position: relative;
-      max-width: 500px;
-      width: 100%;
-      border: 5px solid #fff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      background: #ddd;
-      min-height: 300px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .preview-box img {
-      width: 100%;
-      display: block;
-    }
-    .preview-box .caption-layer {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    /* Скрытый холст для генерации */
-    #canvas-helper {
-      display: none;
-    }
-    .nav-links {
-      margin-top: 20px;
-      text-align: center;
-    }
-  </style>
+  <title>КОТОКАРТИНКА: Конструктор мемов</title>
 </head>
-<body>
+<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <h1>Генератор КОТОКАРТИНКИ</h1>
+  <font face="arial" size="5"><b>ГЕНЕРАТОР КОТОКАРТИНКИ (БЕТА)</b></font>
+  <br><br>
 
-  <div class="editor-container">
-    
-    <!-- Настройки мема -->
-    <div class="controls">
-      <div class="control-group">
-        <label for="image-input">1. Выберите картинку кота:</label>
+  <!-- Ссылка назад -->
+  <a href="index.html">&lt;&lt; Вернуться на главную страницу</a>
+  <br><br>
+
+  <!-- Панель управления (простая HTML таблица для структуры в старом стиле) -->
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
+    <tr>
+      <td>
+        <b>1. Загрузи кота:</b><br>
         <input type="file" id="image-input" accept="image/*">
-      </div>
-      
-      <div class="control-group">
-        <label for="text-input">2. Текст подписи (Shift+Enter для новой строки):</label>
-        <input type="text" id="text-input" placeholder="Человек, я всё уронил..." value="Человек, я всё уронил...">
-      </div>
-
-      <div class="control-group">
-        <label for="alpha-input">3. Прозрачность плашки:</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <b>2. Напиши текст подписи:</b><br>
+        <input type="text" id="text-input" size="50" value="Человек, я всё уронил. Иди поднимай.">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <b>3. Прозрачность черной плашки (от 0 до 100):</b><br>
         <input type="range" id="alpha-input" min="0" max="1" step="0.1" value="0.6">
-      </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <!-- Большая стандартная кнопка -->
+        <button id="download-btn" style="font-size: 16px; font-weight: bold; padding: 5px 10px;">
+          СКАЧАТЬ ГОТОВУЮ КОТОКАРТИНКУ!
+        </button>
+      </td>
+    </tr>
+  </table>
 
-      <button id="download-btn" class="btn" style="width: 100%;">Скачать Готовую Котокартинку</button>
-    </div>
+  <br>
+  <font face="arial" size="4"><b>Предпросмотр:</b></font>
+  <br><br>
 
-    <!-- Интерактивный предпросмотр -->
-    <div class="preview-box" id="preview-container">
-      <span id="placeholder-text" style="color: #666;">Здесь будет ваш мем</span>
-      <img id="preview-img" src="" style="display: none;" alt="Превью">
-      <div class="caption-layer" id="preview-caption" style="display: none;"></div>
-    </div>
-
+  <!-- Блок предпросмотра (просто картинка и текст под ней, позиционирование через JS на Canvas) -->
+  <div id="preview-area" style="position: relative; display: inline-block; border: 4px solid #ffffff;">
+    <span id="placeholder-text">[ Здесь будет картинка, когда ты её выберешь ]</span>
+    <img id="preview-img" src="" style="display: none; max-width: 600px; height: auto;">
+    
+    <!-- Абсолютно позиционированная сырая плашка -->
+    <div id="preview-caption" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #ffffff; font-family: arial; font-weight: bold; font-size: 20px; padding: 10px; text-align: center; display: none;"></div>
   </div>
 
-  <!-- Технический элемент для сборки картинки -->
-  <canvas id="canvas-helper"></canvas>
+  <!-- Технический холст, скрыт от глаз -->
+  <canvas id="canvas-helper" style="display: none;"></canvas>
 
-  <div class="nav-links">
-    <a href="index.html" style="color: #333;">Вернуться на главную</a>
-  </div>
+  <br><br>
+  <hr align="left" width="600">
+  <font face="arial" size="2">СДЕЛАННО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год</font>
 
+  <!-- Простой скрипт обработки без лишних наворотов -->
   <script>
     const imageInput = document.getElementById('image-input');
     const textInput = document.getElementById('text-input');
@@ -163,7 +78,7 @@
 
     let loadedImage = null;
 
-    // 1. Обработка загрузки файла
+    // Чтение картинки
     imageInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -183,68 +98,56 @@
       reader.readAsDataURL(file);
     });
 
-    // 2. Обновление текста и прозрачности «на лету»
+    // Изменение текста на лету
     function updatePreview() {
-      previewCaption.textContent = textInput.value;
+      previewCaption.innerText = textInput.value;
       previewCaption.style.background = `rgba(0, 0, 0, ${alphaInput.value})`;
     }
 
     textInput.addEventListener('input', updatePreview);
     alphaInput.addEventListener('input', updatePreview);
 
-    // Initial setup
-    updatePreview();
-
-    // 3. Сборка картинки на Canvas и скачивание
+    // Сборка и скачивание
     downloadBtn.addEventListener('click', function() {
       if (!loadedImage) {
-        alert('Сначала загрузите картинку котика!');
+        alert('Эй! Картинку-то выбери сначала!');
         return;
       }
 
-      // Устанавливаем оригинальный размер холста как у картинки
       canvas.width = loadedImage.naturalWidth;
       canvas.height = loadedImage.naturalHeight;
 
       // Рисуем кота
       ctx.drawImage(loadedImage, 0, 0);
 
-      // Рассчитываем параметры плашки относительно размера картинки
+      // Настройки шрифта под размер картинки
       const text = textInput.value;
-      const lines = text.split('\n');
-      
-      // Адаптивный размер шрифта (примерно 4.5% от ширины картинки)
-      const fontSize = Math.max(16, Math.floor(canvas.width * 0.045)); 
+      const fontSize = Math.max(16, Math.floor(canvas.width * 0.045));
       ctx.font = `bold ${fontSize}px Arial`;
       ctx.textAlign = 'center';
 
+      // Считаем высоту плашки
       const padding = fontSize * 0.8;
-      const lineHeight = fontSize * 1.3;
-      const rectHeight = (lines.length * lineHeight) + (padding * 2);
+      const rectHeight = fontSize + (padding * 2);
       const rectY = canvas.height - rectHeight;
 
-      // Рисуем полупрозрачную плашку
+      // Плашка
       ctx.fillStyle = `rgba(0, 0, 0, ${alphaInput.value})`;
       ctx.fillRect(0, rectY, canvas.width, rectHeight);
 
-      // Рисуем текст с тенью
+      // Белый текст с тенью
       ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowColor = 'black';
       ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
+      ctx.fillText(text, canvas.width / 2, rectY + padding + (fontSize * 0.8));
 
-      lines.forEach((line, index) => {
-        const textY = rectY + padding + fontSize + (index * lineHeight);
-        ctx.fillText(line, canvas.width / 2, textY);
-      });
-
-      // Скачивание файла
+      // Скачивание
       const link = document.createElement('a');
       link.download = 'kotokartinka.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
   </script>
+
 </body>
 </html>

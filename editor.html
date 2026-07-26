@@ -3,89 +3,133 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: Конструктор мемов</title>
+  <title>КОТОКАРТИНКА: Создать котоматрицу</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <font face="arial" size="5"><b>ГЕНЕРАТОР КОТОКАРТИНКИ (ИСПРАВЛЕННЫЙ)</b></font>
-  <br><br>
-
-  <a href="index.html">&lt;&lt; Вернуться на главную страницу</a>
-  <br><br>
-
-  <!-- Таблица настроек -->
-  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
+  <!-- Шапка в стиле твоего сайта -->
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
-      <td>
-        <b>1. Загрузи кота:</b><br>
-        <input type="file" id="image-input" accept="image/*">
+      <td><font face="arial" size="2">Фото загрузил: <u>Richisoft</u></font></td>
+      <td align="right">
+        <!-- Тот самый легендарный хомяк из Котоматрицы -->
+        <img src="http://kotomatrix.ru" alt="хомяк" onerror="this.src='https://github.com'" width="70">
+      </td>
+    </tr>
+  </table>
+
+  <!-- Форма редактирования в оригинальной табличной структуре -->
+  <table border="0" cellpadding="3" cellspacing="0">
+    <tr>
+      <td align="right"><font face="arial" size="2">Текст:</font></td>
+      <td colspan="2">
+        <input type="text" id="text-input" size="80" value="хозяин, ты уверен, что хочешь именно так сходить?">
+      </td>
+      <td rowspan="6" valign="top" style="padding-left: 20px;">
+        <font face="arial" size="2">Уже нанесённые надписи:</font><br>
+        <!-- Список добавленных надписей -->
+        <select id="added-texts-list" size="6" style="width: 250px; font-family: arial; font-size: 12px;">
+        </select>
+        <br>
+        <button id="clear-last-btn" style="font-family: arial; font-size: 11px; margin-top: 4px;">Удалить последнюю</button>
       </td>
     </tr>
     <tr>
+      <td align="right"><font face="arial" size="2">Шрифт:</font></td>
       <td>
-        <b>2. Текст подписи:</b><br>
-        <input type="text" id="text-input" size="50" value="хозяин, ты уверен, что хочешь именно так сходить?">
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <b>3. Цвет текста:</b><br>
-        <select id="text-color-select">
-          <option value="yellow" selected>Желтый</option>
-          <option value="white">Белый</option>
-          <option value="black">Черный</option>
-          <option value="cyan">Голубой</option>
+        <select id="font-family-select" style="font-family: arial;">
+          <option value="Arial" selected>arial</option>
         </select>
       </td>
     </tr>
     <tr>
+      <td align="right"><font face="arial" size="2">Размер:</font></td>
       <td>
-        <b>4. Размер шрифта:</b><br>
-        <select id="font-size-select">
-          <option value="small">Маленький</option>
-          <option value="medium" selected>Обычный</option>
-          <option value="large">Большой</option>
-          <option value="huge">Огромный</option>
+        <select id="font-size-select" style="font-family: arial;">
+          <option value="14">14</option>
+          <option value="16">16</option>
+          <option value="18">18</option>
+          <option value="20" selected>20</option>
+          <option value="24">24</option>
+          <option value="28">28</option>
+          <option value="32">32</option>
+          <option value="36">36</option>
+          <option value="40">40</option>
         </select>
       </td>
     </tr>
     <tr>
+      <td align="right"><font face="arial" size="2">Цвет:</font></td>
       <td>
-        <b>5. Как поставить текст:</b><br>
-        <font size="2" color="gray">Води мышкою по картинке и кликни в нужном месте, чтобы закрепить текст!</font>
+        <select id="text-color-select" style="font-family: arial;">
+          <option value="#ffffff" selected>Белый</option>
+          <option value="#000000">Чёрный</option>
+          <option value="#ff0000">Красный</option>
+          <option value="#808080">Серый</option>
+          <option value="#ffff00">Жёлтый</option>
+          <option value="#008000">Тёмно-зелёный</option>
+          <option value="#800000">Бордовый</option>
+          <option value="#000080">Тёмно-синий</option>
+        </select>
       </td>
     </tr>
     <tr>
+      <td align="right"><font face="arial" size="2">Угол наклона:</font></td>
       <td>
-        <button id="download-btn" style="font-size: 16px; font-weight: bold; padding: 5px 10px;">
-          СКАЧАТЬ ГОТОВУЮ КОТОКАРТИНКУ!
-        </button>
+        <select id="angle-select" style="font-family: arial;">
+          <option value="-15">-15°</option>
+          <option value="-10">-10°</option>
+          <option value="-5">-5°</option>
+          <option value="0" selected>0°</option>
+          <option value="5">5°</option>
+          <option value="10">10°</option>
+          <option value="15">15°</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <input type="file" id="image-input" accept="image/*" style="font-family: arial; font-size: 12px;">
       </td>
     </tr>
   </table>
 
   <br>
-  <font face="arial" size="4"><b>Предпросмотр (наведи мышь и кликни):</b></font>
+  <!-- Главная кнопка действия -->
+  <button id="download-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
+    СКАЧАТЬ ГОТОВУЮ КОТОКАРТИНКУ!
+  </button>
   <br><br>
 
-  <!-- Область предпросмотра -->
-  <div id="preview-area" style="position: relative; display: inline-block; border: 4px solid #ffffff; cursor: crosshair; min-width: 300px; min-height: 200px;">
-    <span id="placeholder-text">[ Картинка появится здесь, когда ты её выберешь ]</span>
-    <img id="preview-img" src="" style="display: none; max-width: 700px; height: auto;" draggable="false">
-    
-    <!-- Летающая надпись (исправлен padding и text-shadow) -->
-    <div id="preview-caption" style="position: absolute; left: 0; top: 0; width: 100%; box-sizing: border-box; padding-left: 20px; pointer-events: none; white-space: nowrap; font-family: arial; font-weight: bold; display: none; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;"></div>
+  <!-- Инструкция -->
+  <font face="arial" size="2" color="#555">
+    <i>* Инструкция: выберите картинку, настройте текст, водите мышкой по изображению и <b>кликните левой кнопкой мыши</b>, чтобы припечатать надпись. Можно добавить сколько угодно надписей!</i>
+  </font>
+  <br><br>
 
-    <!-- Постоянный водяной знак в превью -->
-    <div id="preview-watermark" style="position: absolute; left: 20px; bottom: 15px; pointer-events: none; white-space: nowrap; font-family: arial; font-weight: bold; color: #ffffff; display: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
+  <!-- Интерактивная зона предпросмотра -->
+  <div id="preview-area" style="position: relative; display: inline-block; border: 1px solid #000000; cursor: crosshair; min-width: 320px; min-height: 240px; background-color: #ccc;">
+    <span id="placeholder-text" style="font-family: arial; font-size: 13px; padding: 10px; display: block;">[ Сначала выберите картинку с котиком ]</span>
+    <img id="preview-img" src="" style="display: none; max-width: 750px; height: auto;" draggable="false">
+    
+    <!-- Слой для динамически летающей за курсором надписи -->
+    <div id="preview-floating-caption" style="position: absolute; left: 0; top: 0; pointer-events: none; white-space: nowrap; font-family: Arial, sans-serif; font-weight: bold; display: none;"></div>
+
+    <!-- Слой для уже зафиксированных надписей на экране -->
+    <div id="fixed-captions-layer" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>
+
+    <!-- Водяной знак сайта (всегда виден в левом нижнем углу) -->
+    <div id="preview-watermark" style="position: absolute; left: 15px; bottom: 15px; pointer-events: none; white-space: nowrap; font-family: Arial, sans-serif; font-weight: bold; color: #ffffff; display: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; font-size: 13px;">
       котокартинка - kotokartinka-online.vercel.app
     </div>
   </div>
 
+  <!-- Невидимый холст для итоговой склейки -->
   <canvas id="canvas-helper" style="display: none;"></canvas>
 
   <br><br>
-  <hr align="left" width="600">
+  <hr align="left" width="750">
   <font face="arial" size="2">СДЕЛАННО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год</font>
 
   <script>
@@ -93,10 +137,14 @@
     const textInput = document.getElementById('text-input');
     const textColorSelect = document.getElementById('text-color-select');
     const fontSizeSelect = document.getElementById('font-size-select');
+    const angleSelect = document.getElementById('angle-select');
+    const addedTextsList = document.getElementById('added-texts-list');
+    const clearLastBtn = document.getElementById('clear-last-btn');
     
     const previewArea = document.getElementById('preview-area');
     const previewImg = document.getElementById('preview-img');
-    const previewCaption = document.getElementById('preview-caption');
+    const floatingCaption = document.getElementById('preview-floating-caption');
+    const fixedCaptionsLayer = document.getElementById('fixed-captions-layer');
     const previewWatermark = document.getElementById('preview-watermark');
     const placeholderText = document.getElementById('placeholder-text');
     const downloadBtn = document.getElementById('download-btn');
@@ -104,12 +152,15 @@
     const ctx = canvas.getContext('2d');
 
     let loadedImage = null;
-    let isLocked = false; 
-    let textYPercent = 10; 
+    let savedCaptions = []; // Хранилище всех впечатанных фраз
+    
+    // Координаты текущей летающей надписи в процентах
+    let currentXPercent = 10;
+    let currentYPercent = 10;
 
-    // Загрузка файла
+    // Загрузка картинки
     imageInput.addEventListener('change', function(e) {
-      const file = e.target.files[0]; // Исправлено получение одиночного файла
+      const file = e.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
@@ -119,118 +170,67 @@
           previewImg.src = event.target.result;
           previewImg.style.display = 'block';
           placeholderText.style.display = 'none';
-          previewCaption.style.display = 'block';
-          previewWatermark.style.display = 'block'; 
-          isLocked = false; 
-          updatePreviewText();
+          floatingCaption.style.display = 'block';
+          previewWatermark.style.display = 'block';
+          savedCaptions = []; 
+          renderAllFixedCaptions();
+          updateFloatingStyles();
         };
         loadedImage.src = event.target.result;
       };
       reader.readAsDataURL(file);
     });
 
-    // Обновление стилей и размеров
-    function updatePreviewText() {
-      previewCaption.innerText = textInput.value;
-      previewCaption.style.color = textColorSelect.value;
-
-      // Исправлена опечатка font_size -> fontSize
-      if (fontSizeSelect.value === 'small') {
-        previewCaption.style.fontSize = '14px';
-        previewWatermark.style.fontSize = '11px';
-      }
-      if (fontSizeSelect.value === 'medium') {
-        previewCaption.style.fontSize = '22px';
-        previewWatermark.style.fontSize = '14px';
-      }
-      if (fontSizeSelect.value === 'large') {
-        previewCaption.style.fontSize = '28px';
-        previewWatermark.style.fontSize = '17px';
-      }
-      if (fontSizeSelect.value === 'huge') {
-        previewCaption.style.fontSize = '36px';
-        previewWatermark.style.fontSize = '21px';
-      }
+    // Изменение стилей летающего текста на лету
+    function updateFloatingStyles() {
+      floatingCaption.innerText = textInput.value;
+      floatingCaption.style.color = textColorSelect.value;
+      floatingCaption.style.fontSize = fontSizeSelect.value + 'px';
+      
+      // Жирный черный контур без размытия (чистый олдскул)
+      floatingCaption.style.textShadow = `
+        -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000,
+        -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000
+      `;
+      
+      // Поворот плашки
+      floatingCaption.style.transform = `rotate(${angleSelect.value}deg)`;
     }
 
-    // Движение мыши по области картинки
+    // Свободное движение мыши по горизонтали и вертикали (X и Y)
     previewArea.addEventListener('mousemove', function(e) {
-      if (!loadedImage || isLocked) return;
+      if (!loadedImage) return;
 
       const rect = previewArea.getBoundingClientRect();
-      const mouseY = e.clientY - rect.top; 
-      
-      textYPercent = (mouseY / rect.height) * 100;
-      
-      if (textYPercent < 2) textYPercent = 2;
-      if (textYPercent > 90) textYPercent = 90;
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      previewCaption.style.top = textYPercent + '%';
+      currentXPercent = (mouseX / rect.width) * 100;
+      currentYPercent = (mouseY / rect.height) * 100;
+
+      // Слегка ограничиваем, чтобы текст не уплывал совсем за рамки
+      if (currentXPercent < 1) currentXPercent = 1;
+      if (currentXPercent > 95) currentXPercent = 95;
+      if (currentYPercent < 1) currentYPercent = 1;
+      if (currentYPercent > 95) currentYPercent = 95;
+
+      floatingCaption.style.left = currentXPercent + '%';
+      floatingCaption.style.top = currentYPercent + '%';
     });
 
-    // Фиксация/отпускание на клик
-    previewArea.addEventListener('click', function() {
+    // Клик фиксирует надпись и штампует её в массив
+    previewArea.addEventListener('click', function(e) {
       if (!loadedImage) return;
-      isLocked = !isLocked; 
-    });
+      if (e.target === addedTextsList || e.target === clearLastBtn) return;
 
-    textInput.addEventListener('input', updatePreviewText);
-    textColorSelect.addEventListener('change', updatePreviewText);
-    fontSizeSelect.addEventListener('change', updatePreviewText);
+      // Сохраняем все текущие параметры надписи
+      const newCaption = {
+        text: textInput.value,
+        color: textColorSelect.value,
+        size: parseInt(fontSizeSelect.value),
+        angle: parseInt(angleSelect.value),
+        xPct: currentXPercent,
+        yPct: currentYPercent
+      };
 
-    // Сборка и скачивание
-    downloadBtn.addEventListener('click', function() {
-      if (!loadedImage) {
-        alert('Картинку-то загрузи!');
-        return;
-      }
-
-      canvas.width = loadedImage.naturalWidth;
-      canvas.height = loadedImage.naturalHeight;
-
-      // 1. Рисуем кота
-      ctx.drawImage(loadedImage, 0, 0);
-
-      // 2. Рассчитываем и впечатываем основной текст
-      let baseSize = canvas.width * 0.045;
-      if (fontSizeSelect.value === 'small') baseSize = canvas.width * 0.03;
-      if (fontSizeSelect.value === 'large') baseSize = canvas.width * 0.06;
-      if (fontSizeSelect.value === 'huge') baseSize = canvas.width * 0.075;
-
-      const fontSize = Math.max(14, Math.floor(baseSize));
-      ctx.font = `bold ${fontSize}px Arial`;
-      ctx.textAlign = 'left'; 
-
-      const targetY = (textYPercent / 100) * canvas.height + fontSize;
-
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = Math.max(4, fontSize * 0.18); // Обводка сделана чуть жирнее для читаемости
-      ctx.strokeText(textInput.value, 20, targetY);
-
-      ctx.fillStyle = textColorSelect.value;
-      ctx.fillText(textInput.value, 20, targetY);
-
-      // 3. Впечатываем клеймо в левый нижний угол холста
-      const watermarkText = "котокартинка - kotokartinka-online.vercel.app";
-      const watermarkSize = Math.max(12, Math.floor(canvas.width * 0.025)); 
-      ctx.font = `bold ${watermarkSize}px Arial`;
-      ctx.textAlign = 'left';
-
-      const watermarkY = canvas.height - 15; 
-
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = Math.max(2, watermarkSize * 0.15);
-      ctx.strokeText(watermarkText, 20, watermarkY);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(watermarkText, 20, watermarkY);
-
-      // 4. Скачивание готового файла
-      const link = document.createElement('a');
-      link.download = 'kotokartinka.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
-  </script>
-</body>
-</html>
+savedCaptions.push(newCaption);renderAllFixedCaptions();});// Перерисовка закрепленных элементов на экране и обновление правого спискаfunction renderAllFixedCaptions() {fixedCaptionsLayer.innerHTML = '';addedTextsList.innerHTML = '';savedCaptions.forEach((cap, idx) => {// 1. Отрисовка на превью-картинкеconst div = document.createElement('div');div.innerText = cap.text;div.style.position = 'absolute';div.style.left = cap.xPct + '%';div.style.top = cap.yPct + '%';div.style.color = cap.color;div.style.fontSize = cap.size + 'px';div.style.fontFamily = 'Arial';div.style.fontWeight = 'bold';div.style.whiteSpace = 'nowrap';div.style.transform = rotate(${cap.angle}deg);div.style.textShadow = -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;fixedCaptionsLayer.appendChild(div);// 2. Добавление в правый список селектаconst opt = document.createElement('option');opt.text = ${idx + 1}. ${cap.text.substring(0, 20)}${cap.text.length > 20 ? '...' : ''};addedTextsList.add(opt);});}// Кнопка удаления последней надписиclearLastBtn.addEventListener('click', function(e) {e.stopPropagation(); // Отключаем ложный клик по картинкеif (savedCaptions.length > 0) {savedCaptions.pop();renderAllFixedCaptions();}});// Подписка на изменения органов управленияtextInput.addEventListener('input', updateFloatingStyles);textColorSelect.addEventListener('change', updateFloatingStyles);fontSizeSelect.addEventListener('change', updateFloatingStyles);angleSelect.addEventListener('change', updateFloatingStyles);// Функция отрисовки текста с жирным контуром на Canvasfunction drawStrokeTextOldschool(context, text, x, y, fontStyle, color, lineWidth) {context.font = fontStyle;context.textAlign = 'left';// Жирный сплошной контур: рисуем обводку черным цветом несколько раз со смещениемcontext.strokeStyle = '#000000';context.lineWidth = lineWidth;context.strokeText(text, x, y);// Заливаем внутреннюю часть основным цветомcontext.fillStyle = color;context.fillText(text, x, y);}// Генерация финального холста и скачивание файлаdownloadBtn.addEventListener('click', function() {if (!loadedImage) {alert('Картинку выбери сначала!');return;}// Задаем оригинальные физические размеры загруженной картинкиcanvas.width = loadedImage.naturalWidth;canvas.height = loadedImage.naturalHeight;// Рисуем котаctx.drawImage(loadedImage, 0, 0);// Впечатываем ВСЕ сохраненные надписи из массиваsavedCaptions.forEach(cap => {ctx.save();// Рассчитываем координаты на оригинальном холсте исходя из процентов на превьюconst realX = (cap.xPct / 100) * canvas.width;const realY = (cap.yPct / 100) * canvas.height;// Корректируем размер шрифта под реальное разрешение исходного фото кота// (Базовый масштаб ориентируется на ширину предпросмотра ~700px)const scaleFactor = canvas.width / Math.min(canvas.width, 700);const realFontSize = Math.floor(cap.size * scaleFactor);// Переносим контекст в точку создания для вращения угла наклонаctx.translate(realX, realY);ctx.rotate((cap.angle * Math.PI) / 180);const fontStr = bold ${realFontSize}px Arial;const strokeW = Math.max(3, realFontSize * 0.18); // Плотный толстый контур// ОтрисовкаdrawStrokeTextOldschool(ctx, cap.text, 0, realFontSize * 0.8, fontStr, cap.color, strokeW);ctx.restore();});// Впечатываем клеймо сайта в левый нижний угол оригинального холстаconst watermarkText = "котокартинка - kotokartinka-online.vercel.app";const watermarkSize = Math.max(12, Math.floor(canvas.width * 0.024));const watermarkY = canvas.height - 15;const watermarkX = 20;const wmStrokeW = Math.max(2, watermarkSize * 0.15);drawStrokeTextOldschool(ctx, watermarkText, watermarkX, watermarkY, bold ${watermarkSize}px Arial, '#ffffff', wmStrokeW);// Скачиваниеconst link = document.createElement('a');link.download = 'kotokartinka.png';link.href = canvas.toDataURL('image/png');link.click();});

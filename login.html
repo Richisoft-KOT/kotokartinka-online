@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="windows-1251">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КОТОКАРТИНКА: вход</title>
+</head>
+<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
+  <a href="/index.html">На главную</a><br><br>
+
+  <font face="arial" size="5"><b>ВХОД НА КОТОКАРТИНКУ</b></font><br><br>
+
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
+    <tr>
+      <td align="right"><font face="arial" size="2">логин:</font></td>
+      <td><input type="text" id="login-username" size="30"></td>
+    </tr>
+    <tr>
+      <td align="right"><font face="arial" size="2">пароль:</font></td>
+      <td><input type="password" id="login-password" size="30"></td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <button id="login-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
+          ВОЙТИ!
+        </button>
+      </td>
+    </tr>
+  </table>
+
+  <br>
+  <font face="arial" size="2">еще нет аккаунта? <a href="/register.html">рарегистрироваться!</a></font>
+
+  <script>
+    document.getElementById('login-btn').onclick = function() {
+      var user = document.getElementById('login-username').value.trim();
+      var pass = document.getElementById('login-password').value.trim();
+
+      var users = JSON.parse(localStorage.getItem('koto_users') || '[]');
+      
+      // Ищем юзера с таким логином и паролем
+      var foundUser = users.find(function(u) { 
+        return u.username.toLowerCase() === user.toLowerCase() && u.password === pass; 
+      });
+
+      if (!foundUser) {
+        alert('неверный логин или пароль!');
+        return;
+      }
+
+      // Запоминаем, кто вошел
+      localStorage.setItem('koto_current_user', foundUser.username);
+
+      alert('превед!, ' + foundUser.username + '! ты успешно вошли.');
+      window.location.href = '/editor.html';
+    };
+  </script>
+</body>
+</html>

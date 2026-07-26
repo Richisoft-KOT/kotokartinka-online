@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="windows-1251">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КОТОКАРТИНКА: личный кабинет</title>
+</head>
+<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
+
+  <a href="/index.html">На главную</a> | <a href="/editor.html">В редактор</a><br><br>
+
+  <font face="arial" size="5"><b>ЛИЧНЫЙ КАБИНЕТ</b></font><br><br>
+
+  <!-- Блок информации о пользователе -->
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="font-family: arial; font-size: 14px;">
+    <tr>
+      <td bgcolor="#ff9900"><font color="#ffffff"><b>твой профиль</b></font></td>
+    </tr>
+    <tr>
+      <td>
+        логин: <b id="profile-username">Гость</b><br><br>
+        всего создано котокартинок: <b id="profile-count">0</b>
+      </td>
+    </tr>
+  </table>
+
+  <br><br>
+  <font face="arial" size="4"><b>Мои опубликованные творения:</b></font>
+  <br><br>
+
+  <!-- Сюда выводятся только мемы текущего пользователя -->
+  <div id="my-posts-container"></div>
+
+  <script>
+    // Проверяем авторизацию
+    var currentUser = localStorage.getItem('koto_current_user');
+    if (!currentUser) {
+      alert('вход не выполнен!');
+      window.location.href = '/login.html';
+    }
+
+    // Выводим имя
+    document.getElementById('profile-username').innerText = currentUser;
+
+    var container = document.getElementById('my-posts-container');
+    var posts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
+    
+    // Фильтруем общую ленту постов, оставляя только посты текущего юзера
+    var myPosts = posts.filter(function(post) {
+      return post.author === currentUser;
+    });
+
+    // Выводим количество
+    document.getElementById('profile-count').innerText = myPosts.length;
+
+    if (myPosts.length === 0) {
+      container.innerHTML = '<font face="arial" size="3">Ты еще не опубликовал ни одной котокартинки через кнопку на сайте.</font>';
+    } else {
+      myPosts.forEach(function(post) {
+        var postDiv = document.createElement('div');
+        postDiv.style.marginBottom = '40px';
+
+        var titleNode = document.createElement('div');
+        titleNode.innerHTML = '<font face="arial" size="3"><b>' + post.title + '... ' + post.date + '</b></font><br><br>';
+        
+        var imgNode = document.createElement('img');
+        imgNode.src = post.image;
+        imgNode.style.maxWidth = '600px';
+        imgNode.style.height = 'auto';
+        imgNode.style.border = '1px solid #000';
+
+        postDiv.appendChild(titleNode);
+        postDiv.appendChild(imgNode);
+        postDiv.appendChild(document.createElement('br'));
+        
+        var hr = document.createElement('hr');
+        hr.setAttribute('align', 'left');
+        hr.setAttribute('width', '600');
+        postDiv.appendChild(hr);
+
+        container.appendChild(postDiv);
+      });
+    }
+  </script>
+</body>
+</html>

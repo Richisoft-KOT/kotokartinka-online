@@ -112,8 +112,9 @@
     var currentXPercent = 10;
     var currentYPercent = 10;
 
-    imageInput.addEventListener('change', function(e) {
-      if (!e.target.files || e.target.files.length === 0) return;
+    imageInput.onchange = function(e) {
+      if (!e.target.files) return;
+      if (e.target.files.length === 0) return;
       
       var file = e.target.files[0];
       var reader = new FileReader();
@@ -133,7 +134,7 @@
         loadedImage.src = event.target.result;
       };
       reader.readAsDataURL(file);
-    });
+    };
 
     function updateFloatingStyles() {
       floatingCaption.innerText = textInput.value;
@@ -141,16 +142,16 @@
       floatingCaption.style.fontSize = fontSizeSelect.value + 'px';
     }
 
-    previewArea.addEventListener('mousemove', function(e) {
+    previewArea.onmousemove = function(e) {
       if (!loadedImage) return;
       var rect = previewArea.getBoundingClientRect();
       currentXPercent = ((e.clientX - rect.left) / rect.width) * 100;
       currentYPercent = ((e.clientY - rect.top) / rect.height) * 100;
       floatingCaption.style.left = currentXPercent + '%';
       floatingCaption.style.top = currentYPercent + '%';
-    });
+    };
 
-    previewArea.addEventListener('click', function(e) {
+    previewArea.onclick = function(e) {
       if (!loadedImage) return;
       if (e.target === addedTextsList) return;
       if (e.target === clearLastBtn) return;
@@ -165,7 +166,7 @@
       };
       savedCaptions.push(newCaption);
       renderAllFixedCaptions();
-    });
+    };
 
     function renderAllFixedCaptions() {
       fixedCaptionsLayer.innerHTML = '';
@@ -187,17 +188,17 @@
       });
     }
 
-    clearLastBtn.addEventListener('click', function(e) {
+    clearLastBtn.onclick = function(e) {
       e.stopPropagation(); 
       if (savedCaptions.length > 0) {
         savedCaptions.pop();
         renderAllFixedCaptions();
       }
-    });
+    };
 
-    textInput.addEventListener('input', updateFloatingStyles);
-    textColorSelect.addEventListener('change', updateFloatingStyles);
-    fontSizeSelect.addEventListener('change', updateFloatingStyles);
+    textInput.oninput = updateFloatingStyles;
+    textColorSelect.onchange = updateFloatingStyles;
+    fontSizeSelect.onchange = updateFloatingStyles;
 
     function drawStrokeTextOldschool(context, text, x, y, fontStyle, color, lineWidth) {
       context.font = fontStyle;
@@ -209,7 +210,7 @@
       context.fillText(text, x, y);
     }
 
-    downloadBtn.addEventListener('click', function() {
+    downloadBtn.onclick = function() {
       if (!loadedImage) return;
       canvas.width = loadedImage.naturalWidth;
       canvas.height = loadedImage.naturalHeight;
@@ -240,7 +241,7 @@
       link.download = 'kotokartinka.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-    });
+    };
   </script>
 </body>
 </html>

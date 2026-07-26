@@ -9,7 +9,7 @@
       font-family: Arial, sans-serif;
       font-weight: bold;
       white-space: nowrap;
-      -webkit-text-stroke: 1.5px black;
+      -webkit-text-stroke: 1px black;
       text-shadow: 1px 1px 0 #000;
     }
   </style>
@@ -113,10 +113,9 @@
     var currentYPercent = 10;
 
     imageInput.onchange = function(e) {
-      if (!e.target.files) return;
-      if (e.target.files.length === 0) return;
+      if (!e.target.files || e.target.files.length === 0) return;
       
-      var file = e.target.files[0];
+      var file = e.target.files;
       var reader = new FileReader();
       
       reader.onload = function(event) {
@@ -225,7 +224,7 @@
 
         ctx.translate(realX, realY);
         var fontStr = 'bold ' + realFontSize + 'px Arial';
-        var strokeW = Math.max(3, realFontSize * 0.18);
+        var strokeW = Math.max(1.5, realFontSize * 0.08);
         drawStrokeTextOldschool(ctx, cap.text, 0, realFontSize * 0.8, fontStr, cap.color, strokeW);
         ctx.restore();
       });
@@ -233,7 +232,7 @@
       var watermarkSize = Math.max(12, Math.floor(canvas.width * 0.024)); 
       var watermarkY = canvas.height - 15;
       var fontW = 'bold ' + watermarkSize + 'px Arial';
-      var strokeW = Math.max(2, watermarkSize * 0.15);
+      var strokeW = Math.max(1.5, watermarkSize * 0.08);
       var txt = "котокартинка - kotokartinka-online.vercel.app";
       drawStrokeTextOldschool(ctx, txt, 20, watermarkY, fontW, '#ffffff', strokeW);
 

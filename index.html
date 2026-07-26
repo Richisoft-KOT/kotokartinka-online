@@ -36,7 +36,7 @@
 
     if (currentUser) {
       // Если пользователь вошел в аккаунт
-      statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/profile.html"><b>личный кабинет</b></a> | <a href="#" id="logout-link">выйти</a>' | <a href="/editor.html"><b>создать котоматрицу</b></a>;
+      statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/profile.html"><b>личный кабинет</b></a> | <a href="#" id="logout-link">выйти</a>';
       
       document.getElementById('logout-link').onclick = function(e) {
         e.preventDefault();

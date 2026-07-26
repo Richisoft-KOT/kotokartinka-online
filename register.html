@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="windows-1251">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КОТОКАРТИНКА: регистрация</title>
+</head>
+<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
+  <a href="/index.html">на главную</a><br><br>
+
+  <font face="arial" size="5"><b>РЕГИСТРАЦИЯ НА КОТОКАРТИНКЕ</b></font><br><br>
+
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
+    <tr>
+      <td align="right"><font face="arial" size="2">придумай логин:</font></td>
+      <td><input type="text" id="reg-username" size="30"></td>
+    </tr>
+    <tr>
+      <td align="right"><font face="arial" size="2">придумай пароль:</font></td>
+      <td><input type="password" id="reg-password" size="30"></td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <button id="register-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
+          ЗАРЕГИСТРИРОВАТЬСЯ!
+        </button>
+      </td>
+    </tr>
+  </table>
+
+  <br>
+  <font face="arial" size="2">уже есть аккаунт? <a href="/login.html">войти здесь!</a></font>
+
+  <script>
+    document.getElementById('register-btn').onclick = function() {
+      var user = document.getElementById('reg-username').value.trim();
+      var pass = document.getElementById('reg-password').value.trim();
+
+      if (user === '' || pass === '') {
+        alert('заполни все поля!');
+        return;
+      }
+
+      // Проверяем, нет ли уже такого юзера
+      var users = JSON.parse(localStorage.getItem('koto_users') || '[]');
+      var exists = users.some(function(u) { return u.username.toLowerCase() === user.toLowerCase(); });
+
+      if (exists) {
+        alert('этот логин занят! придумай другой.');
+        return;
+      }
+
+      // Сохраняем нового юзера
+      users.push({ username: user, password: pass });
+      localStorage.setItem('koto_users', JSON.stringify(users));
+
+      alert('регистрация успешна! теперь войди в аккаунт и запиши пароль!');
+      window.location.href = '/login.html';
+    };
+  </script>
+</body>
+</html>

@@ -4,40 +4,30 @@
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>КОТОКАРТИНКА: Создать котоматрицу</title>
+  <style>
+    .oldschool-text {
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      white-space: nowrap;
+      -webkit-text-stroke: 1.5px black;
+      text-shadow: 1px 1px 0 #000;
+    }
+  </style>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <!-- Шапка -->
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td><font face="arial" size="2">Фото загрузил: <u>Richisoft</u></font></td>
-      <td align="right">
-        <img src="http://kotomatrix.ru" alt="хомяк" onerror="this.src='https://github.com'" width="70">
-      </td>
-    </tr>
-  </table>
-
-  <!-- Форма редактирования -->
   <table border="0" cellpadding="3" cellspacing="0">
     <tr>
       <td align="right"><font face="arial" size="2">Текст:</font></td>
-      <td colspan="2">
+      <td>
         <input type="text" id="text-input" size="80" value="хозяин, ты уверен, что хочешь именно так сходить?">
       </td>
-      <td rowspan="6" valign="top" style="padding-left: 20px;">
+      <td rowspan="4" valign="top" style="padding-left: 20px;">
         <font face="arial" size="2">Уже нанесённые надписи:</font><br>
-        <select id="added-texts-list" size="6" style="width: 250px; font-family: arial; font-size: 12px;">
+        <select id="added-texts-list" size="5" style="width: 250px; font-family: arial; font-size: 12px;">
         </select>
         <br>
         <button id="clear-last-btn" style="font-family: arial; font-size: 11px; margin-top: 4px;">Удалить последнюю</button>
-      </td>
-    </tr>
-    <tr>
-      <td align="right"><font face="arial" size="2">Шрифт:</font></td>
-      <td>
-        <select id="font-family-select" style="font-family: arial;">
-          <option value="Arial" selected>arial</option>
-        </select>
       </td>
     </tr>
     <tr>
@@ -72,20 +62,6 @@
       </td>
     </tr>
     <tr>
-      <td align="right"><font face="arial" size="2">Угол наклона:</font></td>
-      <td>
-        <select id="angle-select" style="font-family: arial;">
-          <option value="-15">-15°</option>
-          <option value="-10">-10°</option>
-          <option value="-5">-5°</option>
-          <option value="0" selected>0°</option>
-          <option value="5">5°</option>
-          <option value="10">10°</option>
-          <option value="15">15°</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
       <td></td>
       <td>
         <input type="file" id="image-input" accept="image/*" style="font-family: arial; font-size: 12px;">
@@ -99,61 +75,50 @@
   </button>
   <br><br>
 
-  <font face="arial" size="2" color="#555">
-    <i>* Инструкция: выберите картинку, настройте текст, водите мышкой по изображению и <b>кликните левой кнопкой мыши</b>, чтобы припечатать надпись. Можно добавить сколько угодно надписей!</i>
-  </font>
-  <br><br>
-
-  <!-- Интерактивная зона предпросмотра -->
   <div id="preview-area" style="position: relative; display: inline-block; border: 1px solid #000000; cursor: crosshair; min-width: 320px; min-height: 240px; background-color: #ccc;">
     <span id="placeholder-text" style="font-family: arial; font-size: 13px; padding: 10px; display: block;">[ Сначала выберите картинку с котиком ]</span>
     <img id="preview-img" src="" style="display: none; max-width: 750px; height: auto;" draggable="false">
     
-    <div id="preview-floating-caption" style="position: absolute; left: 0; top: 0; pointer-events: none; white-space: nowrap; font-family: Arial, sans-serif; font-weight: bold; display: none;"></div>
+    <div id="preview-floating-caption" class="oldschool-text" style="position: absolute; left: 0; top: 0; pointer-events: none; display: none;"></div>
     <div id="fixed-captions-layer" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>
 
-    <div id="preview-watermark" style="position: absolute; left: 15px; bottom: 15px; pointer-events: none; white-space: nowrap; font-family: Arial, sans-serif; font-weight: bold; color: #ffffff; display: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; font-size: 13px;">
+    <div id="preview-watermark" class="oldschool-text" style="position: absolute; left: 15px; bottom: 15px; pointer-events: none; color: #ffffff; display: none; font-size: 13px;">
       котокартинка - kotokartinka-online.vercel.app
     </div>
   </div>
 
   <canvas id="canvas-helper" style="display: none;"></canvas>
 
-  <br><br>
-  <hr align="left" width="750">
-  <font face="arial" size="2">СДЕЛАННО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год</font>
-
   <script>
-    const imageInput = document.getElementById('image-input');
-    const textInput = document.getElementById('text-input');
-    const textColorSelect = document.getElementById('text-color-select');
-    const fontSizeSelect = document.getElementById('font-size-select');
-    const angleSelect = document.getElementById('angle-select');
-    const addedTextsList = document.getElementById('added-texts-list');
-    const clearLastBtn = document.getElementById('clear-last-btn');
+    var imageInput = document.getElementById('image-input');
+    var textInput = document.getElementById('text-input');
+    var textColorSelect = document.getElementById('text-color-select');
+    var fontSizeSelect = document.getElementById('font-size-select');
+    var addedTextsList = document.getElementById('added-texts-list');
+    var clearLastBtn = document.getElementById('clear-last-btn');
     
-    const previewArea = document.getElementById('preview-area');
-    const previewImg = document.getElementById('preview-img');
-    const floatingCaption = document.getElementById('preview-floating-caption');
-    const fixedCaptionsLayer = document.getElementById('fixed-captions-layer');
-    const previewWatermark = document.getElementById('preview-watermark');
-    const placeholderText = document.getElementById('placeholder-text');
-    const downloadBtn = document.getElementById('download-btn');
-    const canvas = document.getElementById('canvas-helper');
-    const ctx = canvas.getContext('2d');
+    var previewArea = document.getElementById('preview-area');
+    var previewImg = document.getElementById('preview-img');
+    var floatingCaption = document.getElementById('preview-floating-caption');
+    var fixedCaptionsLayer = document.getElementById('fixed-captions-layer');
+    var previewWatermark = document.getElementById('preview-watermark');
+    var placeholderText = document.getElementById('placeholder-text');
+    var downloadBtn = document.getElementById('download-btn');
+    var canvas = document.getElementById('canvas-helper');
+    var ctx = canvas.getContext('2d');
 
-    let loadedImage = null;
-    let savedCaptions = []; 
-    
-    let currentXPercent = 10;
-    let currentYPercent = 10;
+    var loadedImage = null;
+    var savedCaptions = []; 
+    var currentXPercent = 10;
+    var currentYPercent = 10;
 
-    // ИСПРАВЛЕНО: Чтение первого выбранного файла через [0]
     imageInput.addEventListener('change', function(e) {
-      const file = e.target.files[0]; 
-      if (!file) return;
-
-      const reader = new FileReader();
+      if (!e.target.files) return;
+      if (e.target.files.length === 0) return;
+      
+      var file = e.target.files;
+      var reader = new FileReader();
+      
       reader.onload = function(event) {
         loadedImage = new Image();
         loadedImage.onload = function() {
@@ -175,47 +140,30 @@
       floatingCaption.innerText = textInput.value;
       floatingCaption.style.color = textColorSelect.value;
       floatingCaption.style.fontSize = fontSizeSelect.value + 'px';
-      
-      floatingCaption.style.textShadow = `
-        -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000,
-        -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000
-      `;
-      
-      floatingCaption.style.transform = `rotate(${angleSelect.value}deg)`;
     }
 
     previewArea.addEventListener('mousemove', function(e) {
       if (!loadedImage) return;
-
-      const rect = previewArea.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      currentXPercent = (mouseX / rect.width) * 100;
-      currentYPercent = (mouseY / rect.height) * 100;
-
-      if (currentXPercent < 1) currentXPercent = 1;
-      if (currentXPercent > 95) currentXPercent = 95;
-      if (currentYPercent < 1) currentYPercent = 1;
-      if (currentYPercent > 95) currentYPercent = 95;
-
+      var rect = previewArea.getBoundingClientRect();
+      currentXPercent = ((e.clientX - rect.left) / rect.width) * 100;
+      currentYPercent = ((e.clientY - rect.top) / rect.height) * 100;
       floatingCaption.style.left = currentXPercent + '%';
       floatingCaption.style.top = currentYPercent + '%';
     });
 
     previewArea.addEventListener('click', function(e) {
       if (!loadedImage) return;
-      if (e.target === addedTextsList || e.target === clearLastBtn || e.target.tagName === 'SELECT') return;
+      if (e.target === addedTextsList) return;
+      if (e.target === clearLastBtn) return;
+      if (e.target.tagName === 'SELECT') return;
 
-      const newCaption = {
+      var newCaption = {
         text: textInput.value,
         color: textColorSelect.value,
         size: parseInt(fontSizeSelect.value),
-        angle: parseInt(angleSelect.value),
         xPct: currentXPercent,
         yPct: currentYPercent
       };
-
       savedCaptions.push(newCaption);
       renderAllFixedCaptions();
     });
@@ -223,19 +171,77 @@
     function renderAllFixedCaptions() {
       fixedCaptionsLayer.innerHTML = '';
       addedTextsList.innerHTML = '';
-
-      savedCaptions.forEach((cap, idx) => {
-        const div = document.createElement('div');
+      savedCaptions.forEach(function(cap, idx) {
+        var div = document.createElement('div');
         div.innerText = cap.text;
+        div.className = 'oldschool-text';
         div.style.position = 'absolute';
         div.style.left = cap.xPct + '%';
         div.style.top = cap.yPct + '%';
         div.style.color = cap.color;
         div.style.fontSize = cap.size + 'px';
-        div.style.fontFamily = 'Arial';
-        div.style.fontWeight = 'bold';
-        div.style.whiteSpace = 'nowrap';
-        div.style.transform = `rotate(${cap.angle}deg)`;
-        div.style.textShadow = `
-          -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000,
--1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000`;fixedCaptionsLayer.appendChild(div);const opt = document.createElement('option');opt.text = ${idx + 1}. ${cap.text.substring(0, 20)}${cap.text.length > 20 ? '...' : ''};addedTextsList.add(opt);});}clearLastBtn.addEventListener('click', function(e) {e.stopPropagation();if (savedCaptions.length > 0) {savedCaptions.pop();renderAllFixedCaptions();}});textInput.addEventListener('input', updateFloatingStyles);textColorSelect.addEventListener('change', updateFloatingStyles);fontSizeSelect.addEventListener('change', updateFloatingStyles);angleSelect.addEventListener('change', updateFloatingStyles);function drawStrokeTextOldschool(context, text, x, y, fontStyle, color, lineWidth) {context.font = fontStyle;context.textAlign = 'left';context.strokeStyle = '#000000';context.lineWidth = lineWidth;context.strokeText(text, x, y);context.fillStyle = color;context.fillText(text, x, y);}downloadBtn.addEventListener('click', function() {if (!loadedImage) {alert('Картинку выбери сначала!');return;}canvas.width = loadedImage.naturalWidth;canvas.height = loadedImage.naturalHeight;ctx.drawImage(loadedImage, 0, 0);savedCaptions.forEach(cap => {ctx.save();const realX = (cap.xPct / 100) * canvas.width;const realY = (cap.yPct / 100) * canvas.height;const scaleFactor = canvas.width / Math.min(canvas.width, 700);const realFontSize = Math.floor(cap.size * scaleFactor);ctx.translate(realX, realY);ctx.rotate((cap.angle * Math.PI) / 180);const fontStr = bold ${realFontSize}px Arial;const strokeW = Math.max(3, realFontSize * 0.18);drawStrokeTextOldschool(ctx, cap.text, 0, realFontSize * 0.8, fontStr, cap.color, strokeW);ctx.restore();});const watermarkText = "котокартинка - kotokartinka-online.vercel.app";const watermarkSize = Math.max(12, Math.floor(canvas.width * 0.024));const watermarkY = canvas.height - 15;const watermarkX = 20;const wmStrokeW = Math.max(2, watermarkSize * 0.15);drawStrokeTextOldschool(ctx, watermarkText, watermarkX, watermarkY, bold ${watermarkSize}px Arial, '#ffffff', wmStrokeW);const link = document.createElement('a');link.download = 'kotokartinka.png';link.href = canvas.toDataURL('image/png');link.click();});
+        fixedCaptionsLayer.appendChild(div);
+
+        var opt = document.createElement('option');
+        opt.text = (idx + 1) + '. ' + cap.text.substring(0, 15);
+        addedTextsList.add(opt);
+      });
+    }
+
+    clearLastBtn.addEventListener('click', function(e) {
+      e.stopPropagation(); 
+      if (savedCaptions.length > 0) {
+        savedCaptions.pop();
+        renderAllFixedCaptions();
+      }
+    });
+
+    textInput.addEventListener('input', updateFloatingStyles);
+    textColorSelect.addEventListener('change', updateFloatingStyles);
+    fontSizeSelect.addEventListener('change', updateFloatingStyles);
+
+    function drawStrokeTextOldschool(context, text, x, y, fontStyle, color, lineWidth) {
+      context.font = fontStyle;
+      context.textAlign = 'left';
+      context.strokeStyle = '#000000';
+      context.lineWidth = lineWidth;
+      context.strokeText(text, x, y);
+      context.fillStyle = color;
+      context.fillText(text, x, y);
+    }
+
+    downloadBtn.addEventListener('click', function() {
+      if (!loadedImage) return;
+      canvas.width = loadedImage.naturalWidth;
+      canvas.height = loadedImage.naturalHeight;
+      ctx.drawImage(loadedImage, 0, 0);
+
+      savedCaptions.forEach(function(cap) {
+        ctx.save();
+        var realX = (cap.xPct / 100) * canvas.width;
+        var realY = (cap.yPct / 100) * canvas.height;
+        var scaleFactor = canvas.width / 700;
+        var realFontSize = Math.floor(cap.size * scaleFactor);
+
+        ctx.translate(realX, realY);
+        var fontStr = 'bold ' + realFontSize + 'px Arial';
+        var strokeW = Math.max(3, realFontSize * 0.18);
+        drawStrokeTextOldschool(ctx, cap.text, 0, realFontSize * 0.8, fontStr, cap.color, strokeW);
+        ctx.restore();
+      });
+
+      var watermarkSize = Math.max(12, Math.floor(canvas.width * 0.024)); 
+      var watermarkY = canvas.height - 15;
+      var fontW = 'bold ' + watermarkSize + 'px Arial';
+      var strokeW = Math.max(2, watermarkSize * 0.15);
+      var txt = "котокартинка - kotokartinka-online.vercel.app";
+      drawStrokeTextOldschool(ctx, txt, 20, watermarkY, fontW, '#ffffff', strokeW);
+
+      var link = document.createElement('a');
+      link.download = 'kotokartinka.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  </script>
+</body>
+</html>

@@ -50,8 +50,7 @@
     });
 
     if (foundUserIndex !== -1) {
-      // ИСПРАВЛЕНИЕ СТАРЫХ АККАУНТОВ: Если у юзера еще нет ID (твой первый аккаунт),
-      // то присваиваем ему ID на основе его индекса в массиве (+1) и сохраняем обратно
+      // Если у юзера еще нет ID, присваиваем его на основе индекса в массиве (+1)
       if (!users[foundUserIndex].id) {
         users[foundUserIndex].id = foundUserIndex + 1;
         localStorage.setItem('koto_users', JSON.stringify(users));
@@ -59,8 +58,12 @@
       currentUserId = users[foundUserIndex].id;
     }
 
-    // Выводим ID на экран
-    document.getElementById('profile-id').innerText = currentUserId;
+    // Выводим ID на экран с проверкой на создателя
+    if (currentUserId === 1) {
+      document.getElementById('profile-id').innerHTML = '1 <font color="red"><b>[создатель]</b></font>';
+    } else {
+      document.getElementById('profile-id').innerText = currentUserId;
+    }
 
     // Вывод постов текущего пользователя
     var container = document.getElementById('my-posts-container');

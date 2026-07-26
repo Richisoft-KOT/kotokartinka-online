@@ -7,14 +7,13 @@
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <font face="arial" size="5"><b>ГЕНЕРАТОР КОТОКАРТИНКИ (БЕТА)</b></font>
+  <font face="arial" size="5"><b>ГЕНЕРАТОР КОТОКАРТИНКИ (ВЕРСИЯ 2.0-БЕТА)</b></font>
   <br><br>
 
-  <!-- Ссылка назад -->
   <a href="index.html">&lt;&lt; Вернуться на главную страницу</a>
   <br><br>
 
-  <!-- Панель управления (простая HTML таблица для структуры в старом стиле) -->
+  <!-- Таблица настроек из 2000-х -->
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
     <tr>
       <td>
@@ -24,19 +23,54 @@
     </tr>
     <tr>
       <td>
-        <b>2. Напиши текст подписи:</b><br>
+        <b>2. Текст подписи:</b><br>
         <input type="text" id="text-input" size="50" value="Человек, я всё уронил. Иди поднимай.">
       </td>
     </tr>
     <tr>
       <td>
-        <b>3. Прозрачность черной плашки (от 0 до 100):</b><br>
-        <input type="range" id="alpha-input" min="0" max="1" step="0.1" value="0.6">
+        <b>3. Положение текста (по вертикали):</b><br>
+        <button id="move-up-btn">↑ Выше</button>
+        <button id="move-down-btn">↓ Ниже</button>
       </td>
     </tr>
     <tr>
       <td>
-        <!-- Большая стандартная кнопка -->
+        <b>4. Цвет плашки:</b><br>
+        <select id="bg-color-select">
+          <option value="rgba(0,0,0,0.6)" selected>Черный (полупрозрачный)</option>
+          <option value="black">Черный (плотный)</option>
+          <option value="blue">Синий</option>
+          <option value="red">Красный</option>
+          <option value="green">Зеленый</option>
+          <option value="white">Белый</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <b>5. Цвет текста:</b><br>
+        <select id="text-color-select">
+          <option value="white" selected>Белый</option>
+          <option value="yellow">Желтый</option>
+          <option value="black">Черный</option>
+          <option value="red">Красный</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <b>6. Размер шрифта:</b><br>
+        <select id="font-size-select">
+          <option value="small">Маленький</option>
+          <option value="medium" selected>Обычный</option>
+          <option value="large">Большой</option>
+          <option value="huge">Огромный</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <button id="download-btn" style="font-size: 16px; font-weight: bold; padding: 5px 10px;">
           СКАЧАТЬ ГОТОВУЮ КОТОКАРТИНКУ!
         </button>
@@ -48,27 +82,30 @@
   <font face="arial" size="4"><b>Предпросмотр:</b></font>
   <br><br>
 
-  <!-- Блок предпросмотра (просто картинка и текст под ней, позиционирование через JS на Canvas) -->
+  <!-- Область предпросмотра -->
   <div id="preview-area" style="position: relative; display: inline-block; border: 4px solid #ffffff;">
-    <span id="placeholder-text">[ Здесь будет картинка, когда ты её выберешь ]</span>
+    <span id="placeholder-text">[ Картинка появится здесь ]</span>
     <img id="preview-img" src="" style="display: none; max-width: 600px; height: auto;">
     
-    <!-- Абсолютно позиционированная сырая плашка -->
-    <div id="preview-caption" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #ffffff; font-family: arial; font-weight: bold; font-size: 20px; padding: 10px; text-align: center; display: none;"></div>
+    <!-- Перемещаемая плашка -->
+    <div id="preview-caption" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; text-align: center; font-family: arial; font-weight: bold; display: none;"></div>
   </div>
 
-  <!-- Технический холст, скрыт от глаз -->
   <canvas id="canvas-helper" style="display: none;"></canvas>
 
   <br><br>
   <hr align="left" width="600">
   <font face="arial" size="2">СДЕЛАННО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год</font>
 
-  <!-- Простой скрипт обработки без лишних наворотов -->
   <script>
     const imageInput = document.getElementById('image-input');
     const textInput = document.getElementById('text-input');
-    const alphaInput = document.getElementById('alpha-input');
+    const bgColorSelect = document.getElementById('bg-color-select');
+    const textColorSelect = document.getElementById('text-color-select');
+    const fontSizeSelect = document.getElementById('font-size-select');
+    const moveUpBtn = document.getElementById('move-up-btn');
+    const moveDownBtn = document.getElementById('move-down-btn');
+    
     const previewImg = document.getElementById('preview-img');
     const previewCaption = document.getElementById('preview-caption');
     const placeholderText = document.getElementById('placeholder-text');
@@ -77,8 +114,9 @@
     const ctx = canvas.getContext('2d');
 
     let loadedImage = null;
+    let captionBottomPercent = 0; // Смещение снизу в процентах (0 = самый низ)
 
-    // Чтение картинки
+    // Загрузка картинки
     imageInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -91,6 +129,7 @@
           previewImg.style.display = 'block';
           placeholderText.style.display = 'none';
           previewCaption.style.display = 'block';
+          captionBottomPercent = 0; // Сброс позиции
           updatePreview();
         };
         loadedImage.src = event.target.result;
@@ -98,19 +137,47 @@
       reader.readAsDataURL(file);
     });
 
-    // Изменение текста на лету
+    // Функция обновления превью
     function updatePreview() {
       previewCaption.innerText = textInput.value;
-      previewCaption.style.background = `rgba(0, 0, 0, ${alphaInput.value})`;
+      previewCaption.style.background = bgColorSelect.value;
+      previewCaption.style.color = textColorSelect.value;
+      
+      // Сдвиг плашки в превью
+      previewCaption.style.bottom = captionBottomPercent + '%';
+
+      // Размер шрифта в превью
+      if (fontSizeSelect.value === 'small') previewCaption.style.font_size = '14px';
+      if (fontSizeSelect.value === 'medium') previewCaption.style.fontSize = '20px';
+      if (fontSizeSelect.value === 'large') previewCaption.style.fontSize = '28px';
+      if (fontSizeSelect.value === 'huge') previewCaption.style.fontSize = '36px';
     }
 
-    textInput.addEventListener('input', updatePreview);
-    alphaInput.addEventListener('input', updatePreview);
+    // Обработчики кнопок движения
+    moveUpBtn.addEventListener('click', function() {
+      if (captionBottomPercent < 85) {
+        captionBottomPercent += 5;
+        updatePreview();
+      }
+    });
 
-    // Сборка и скачивание
+    moveDownBtn.addEventListener('click', function() {
+      if (captionBottomPercent > 0) {
+        captionBottomPercent -= 5;
+        updatePreview();
+      }
+    });
+
+    // Слушатели изменений
+    textInput.addEventListener('input', updatePreview);
+    bgColorSelect.addEventListener('change', updatePreview);
+    textColorSelect.addEventListener('change', updatePreview);
+    fontSizeSelect.addEventListener('change', updatePreview);
+
+    // Сборка финального файла
     downloadBtn.addEventListener('click', function() {
       if (!loadedImage) {
-        alert('Эй! Картинку-то выбери сначала!');
+        alert('Картинку выбери сначала!');
         return;
       }
 
@@ -120,34 +187,51 @@
       // Рисуем кота
       ctx.drawImage(loadedImage, 0, 0);
 
-      // Настройки шрифта под размер картинки
-      const text = textInput.value;
-      const fontSize = Math.max(16, Math.floor(canvas.width * 0.045));
+      // Масштабирование шрифта под реальное разрешение картинки
+      let baseSize = canvas.width * 0.045;
+      if (fontSizeSelect.value === 'small') baseSize = canvas.width * 0.03;
+      if (fontSizeSelect.value === 'large') baseSize = canvas.width * 0.06;
+      if (fontSizeSelect.value === 'huge') baseSize = canvas.width * 0.08;
+
+      const fontSize = Math.max(12, Math.floor(baseSize));
       ctx.font = `bold ${fontSize}px Arial`;
       ctx.textAlign = 'center';
 
       // Считаем высоту плашки
-      const padding = fontSize * 0.8;
+      const padding = fontSize * 0.6;
       const rectHeight = fontSize + (padding * 2);
-      const rectY = canvas.height - rectHeight;
+      
+      // Вычисляем координату Y плашки на основе процентов смещения
+      const maxScrollArea = canvas.height - rectHeight;
+      const currentOffset = (captionBottomPercent / 100) * canvas.height;
+      let rectY = canvas.height - rectHeight - currentOffset;
+      
+      // Ограничители, чтобы не вылетало за границы картинки
+      if (rectY < 0) rectY = 0;
+      if (rectY > maxScrollArea) rectY = maxScrollArea;
 
-      // Плашка
-      ctx.fillStyle = `rgba(0, 0, 0, ${alphaInput.value})`;
+      // Рисуем плашку выбранного цвета
+      ctx.fillStyle = bgColorSelect.value;
       ctx.fillRect(0, rectY, canvas.width, rectHeight);
 
-      // Белый текст с тенью
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = 'black';
-      ctx.shadowBlur = 4;
-      ctx.fillText(text, canvas.width / 2, rectY + padding + (fontSize * 0.8));
+      // Настройка тени (для светлых шрифтов)
+      if (textColorSelect.value !== 'black') {
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 4;
+      } else {
+        ctx.shadowColor = 'transparent';
+      }
 
-      // Скачивание
+      // Печатаем текст выбранного цвета
+      ctx.fillStyle = textColorSelect.value;
+      ctx.fillText(textInput.value, canvas.width / 2, rectY + padding + (fontSize * 0.8));
+
+      // Скачивание png
       const link = document.createElement('a');
       link.download = 'kotokartinka.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
   </script>
-
 </body>
 </html>

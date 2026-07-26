@@ -36,7 +36,8 @@
 
     if (currentUser) {
       // Если пользователь вошел в аккаунт
-      statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/profile.html"><b>личный кабинет</b></a> | <a href="#" id="logout-link">выйти</a>';
+     statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/editor.html">создать котоматрицу</a> | <a href="/profile.html">личный кабинет</a> | <a href="#" id="logout-link">выйти</a>';
+
       
       document.getElementById('logout-link').onclick = function(e) {
         e.preventDefault();
@@ -46,7 +47,7 @@
       };
     } else {
       // Если пользователь не авторизован
-      statusTd.innerHTML = 'ты не вошел <b>.</b> | <a href="/login.html"><b>Вход</b></a> | <a href="/register.html"><b>Регистрация</b></a>';
+      statusTd.innerHTML = 'ты не вошел <b>.</b> | <a href="/login.html"><b>вход</b></a> | <a href="/register.html"><b>регистрация</b></a>';
     }
   })();
 </script>

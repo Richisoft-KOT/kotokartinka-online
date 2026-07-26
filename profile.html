@@ -3,30 +3,30 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: Личный кабинет</title>
+  <title>КОТОКАРТИНКА: личный кабинет</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
   <a href="/index.html">На главную</a> | <a href="/editor.html">В редактор</a><br><br>
 
-  <font face="arial" size="5"><b>ЛИЧНЫЙ КАБИНЕТ КОТОКАРТИНЩИКА</b></font><br><br>
+  <font face="arial" size="5"><b>ЛИЧНЫЙ КАБИНЕТ</b></font><br><br>
 
   <!-- Блок информации о пользователе -->
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="font-family: arial; font-size: 14px;">
     <tr>
-      <td bgcolor="#ff9900"><font color="#ffffff"><b>Твой профиль</b></font></td>
+      <td bgcolor="#ff9900"><font color="#ffffff"><b>твой профиль</b></font></td>
     </tr>
     <tr>
       <td>
-        Логин: <b id="profile-username">Гость</b><br>
-        Твой уникальный ID: <b id="profile-id">1</b><br><br>
-        Всего создано котокартинок: <b id="profile-count">0</b>
+        логин: <b id="profile-username">Гость</b><br>
+        твой уникальный ID: <b id="profile-id">1</b><br><br>
+        всего создано котокартинок: <b id="profile-count">0</b>
       </td>
     </tr>
   </table>
 
   <br><br>
-  <font face="arial" size="4"><b>Мои опубликованные творения:</b></font>
+  <font face="arial" size="4"><b>мои опубликованные творения:</b></font>
   <br><br>
 
   <div id="my-posts-container"></div>
@@ -34,7 +34,7 @@
   <script>
     var currentUser = localStorage.getItem('koto_current_user');
     if (!currentUser) {
-      alert('Вход не выполнен! Доступ закрыт.');
+      alert('вход не выполнен!');
       window.location.href = '/login.html';
     }
 
@@ -76,7 +76,7 @@
     document.getElementById('profile-count').innerText = myPosts.length;
 
     if (myPosts.length === 0) {
-      container.innerHTML = '<font face="arial" size="3">Ты еще не опубликовал ни одной котокартинки через кнопку на сайте.</font>';
+      container.innerHTML = '<font face="arial" size="3">эта функция пока не работает.</font>';
     } else {
       myPosts.forEach(function(post) {
         var postDiv = document.createElement('div');

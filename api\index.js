@@ -1,6 +1,6 @@
 // Временное серверное хранилище в памяти сервера Vercel
 let koto_users = [
-  { id: 1, username: 'Richisoft', password: 'твой_пароль_создателя' }, // Напиши свой пароль
+  { id: 1, username: 'Richisoft', password: 'kirill2015' }, // Напиши свой пароль
   { id: 2, username: 'тест', password: 'richi2020' }
 ];
 let koto_posts = [];

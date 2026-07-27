@@ -101,9 +101,9 @@
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      // ИСПРАВЛЕНО ЖЕСТКО: Передаем apikey в заголовках GET-запроса для авторизации ключа sb_publishable
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
-        method: 'GET',
+      // Вызываем стабильную RPC-функцию чтения вместо прямого REST-запроса к таблице
+      fetch(SUPABASE_URL + '/rest/v1/rpc/get_all_koto_posts', {
+        method: 'POST',
         headers: { 
           'apikey': SUPABASE_KEY, 
           'Authorization': 'Bearer ' + SUPABASE_KEY, 
@@ -201,7 +201,7 @@
       publishBtn.disabled = true;
       publishBtn.innerText = 'ОТПРАВКА...';
 
-      var file = fileInput.files[0]; // ИСПРАВЛЕНО: Строго вытаскиваем первый элемент файла
+      var file = fileInput.files[0];
       var reader = new FileReader();
 
       reader.onload = function(event) {
@@ -225,18 +225,24 @@
 
           var templateTitle = 'Автор: ' + currentUser + roleTag + ', ' + textInput.value.trim() + '... ' + formattedDate;
 
-          fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
+          // Вызываем RPC-функцию добавления поста в обход табличных REST-ограничений
+          fetch(SUPABASE_URL + '/rest/v1/rpc/add_koto_post', {
             method: 'POST',
             headers: { 
               'apikey': SUPABASE_KEY, 
               'Authorization': 'Bearer ' + SUPABASE_KEY, 
-              'Content-Type': 'application/json; charset=utf-8', 
-              'Prefer': 'return=minimal' 
+              'Content-Type': 'application/json; charset=utf-8'
             },
-            body: JSON.stringify({ text: templateTitle, image: compressedBase64 })
+            body: JSON.stringify({ 
+              t: templateTitle, 
+              img: compressedBase64 
+            })
           })
           .then(function(res) {
             if (!res.ok) throw new Error('Код сервера: ' + res.status);
+            return res.json();
+          })
+          .then(function() {
             alert('Опубликовано на весь мир!');
             textInput.value = ''; fileInput.value = '';
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';

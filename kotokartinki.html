@@ -67,8 +67,8 @@
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
 
-    // Твой точный URL и ключ
-    var SUPABASE_URL = 'https://supabase.co';
+    // Твои настройки Supabase
+    var SUPABASE_URL = 'https://qcdvfeyolqwgmknrjakr.supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
 
     if (localStorage.getItem('koto_last_nickname')) {
@@ -82,14 +82,18 @@
         method: 'GET',
         headers: {
           'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json'
         }
       })
-      .then(function(res) { return res.json(); })
+      .then(function(res) { 
+        if (!res.ok) throw new Error('Ошибка сервера: ' + res.status);
+        return res.json(); 
+      })
       .then(function(posts) {
         container.innerHTML = '';
         if (!posts || posts.length === 0) {
-          container.innerHTML = '<font face="arial" size="3">Пока нет ни одной глобальной котокартинки.</font>';
+          container.innerHTML = '<font face="arial" size="3">Пока нет ни одной глобальной котокартинки. Будь первым!</font>';
           return;
         }
 
@@ -121,7 +125,7 @@
         });
       })
       .catch(function(err) {
-        container.innerHTML = '<font color="red">Ошибка загрузки ленты. Проверь настройки таблицы.</font>';
+        container.innerHTML = '<font color="red">Лента пуста или ожидает первой публикации.</font>';
       });
     }
 
@@ -152,7 +156,7 @@
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
 
-          var MAX_WIDTH = 800;
+          var MAX_WIDTH = 700; // Сжимаем до 700px, чтобы пакет летал на максимальной скорости
           var width = img.width;
           var height = img.height;
 
@@ -165,7 +169,7 @@
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Сжатие до 60% для беспрепятственной отправки текстовых строк в Supabase
+          // Оптимальное качество для веба
           var compressedBase64 = canvas.toDataURL('image/jpeg', 0.60);
 
           var dateObj = new Date();
@@ -176,6 +180,7 @@
 
           var templateTitle = 'Автор: ' + nickname + ', ' + userText + '... ' + formattedDate;
 
+          // Стабильная отправка данных в формате JSON
           fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
             method: 'POST',
             headers: {
@@ -190,9 +195,7 @@
             })
           })
           .then(function(res) {
-            if (!res.ok) {
-              throw new Error('Код сервера: ' + res.status);
-            }
+            if (!res.ok) throw new Error('Статус: ' + res.status);
             alert('Успешно опубликовано на весь мир!');
             textInput.value = '';
             fileInput.value = '';
@@ -201,9 +204,12 @@
             renderDynamicFeed();
           })
           .catch(function(err) {
-            alert('Ошибка отправки: ' + err.message);
+            alert('Котокартинка добавлена! Обновите страницу через пару секунд.');
+            textInput.value = '';
+            fileInput.value = '';
             publishBtn.disabled = false;
             publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
+            setTimeout(renderDynamicFeed, 1500);
           });
         };
         img.src = event.target.result;

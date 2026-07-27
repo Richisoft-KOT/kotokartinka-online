@@ -34,7 +34,7 @@
     <font color="red"><b>Чтобы добавлять котокартинки в список, пожалуйста, <a href="/login.html">ВОЙДИТЕ</a> или <a href="/register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
   </div>
 
-  <!-- Форма загрузки (по умолчанию скрыта, открывается только для юзеров) -->
+  <!-- Форма загрузки -->
   <table id="upload-form-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display: none;">
     <tr>
       <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td>
@@ -86,35 +86,35 @@
     var currentUser = localStorage.getItem('koto_current_user');
     var currentUserId = parseInt(localStorage.getItem('koto_current_id')) || 0;
 
-    // ЖЕСТКАЯ ПРОВЕРКА: Авторизован ли аккаунт?
+    // Проверка авторизации аккаунта
     if (currentUser && currentUserId) {
-      // Пользователь зарегистрирован — показываем форму
       uploadFormTable.style.display = 'table';
-      
       var roleTag = '';
       if (currentUserId === 1) roleTag = ' [создатель]';
       if (currentUserId === 2) roleTag = ' [тест]';
       authorLabel.innerText = currentUser + roleTag;
     } else {
-      // Пользователь — Гость. Прячем форму, показываем предупреждение
       guestAlertBlock.style.display = 'block';
     }
 
-    // Роль админа на удаление только у ID 1 и ID 2
     var isGlobalAdmin = (currentUserId === 1 || currentUserId === 2);
 
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
+      // ИСПРАВЛЕНО: Явно заставляем сетевой шлюз принимать заголовки в UTF-8 кодировке
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
         method: 'GET',
         headers: { 
           'apikey': SUPABASE_KEY, 
           'Authorization': 'Bearer ' + SUPABASE_KEY, 
-          'Content-Type': 'application/json' 
+          'Content-Type': 'application/json; charset=utf-8' 
         }
       })
-      .then(function(res) { return res.json(); })
+      .then(function(res) { 
+        if (!res.ok) throw new Error('Ошибка сервера: ' + res.status);
+        return res.json(); 
+      })
       .then(function(posts) {
         container.innerHTML = '';
         if (!posts || posts.length === 0) {
@@ -140,7 +140,6 @@
           postDiv.appendChild(titleNode);
           postDiv.appendChild(imgNode);
 
-          // Кнопка удаления видна только создателю (ID 1) и тестеру (ID 2)
           if (isGlobalAdmin) {
             var delBtn = document.createElement('button');
             delBtn.className = 'admin-del-btn';
@@ -161,23 +160,34 @@
           container.appendChild(postDiv);
         });
       })
-      .catch(function() {
-        container.innerHTML = '<font color="red">Ошибка загрузки ленты облака.</font>';
+      .catch(function(err) {
+        // Выводим точную техническую причину для моментальной отладки
+        container.innerHTML = '<font color="red">Ошибка загрузки ленты облака: ' + err.message + '. Убедитесь, что RLS отключен.</font>';
       });
     }
 
     function deletePost(postId) {
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
         method: 'DELETE',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        headers: { 
+          'apikey': SUPABASE_KEY, 
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json; charset=utf-8'
+        }
       })
-      .then(function() { alert('Удалено!'); renderDynamicFeed(); });
+      .then(function(res) {
+        if (!res.ok) throw new Error('Код: ' + res.status);
+        alert('Удалено!'); 
+        renderDynamicFeed(); 
+      })
+      .catch(function(err) {
+        alert('Ошибка удаления: ' + err.message);
+      });
     }
 
     publishBtn.onclick = function(e) {
-      if (e) e.preventDefault(); // Защита от обрыва сетевого fetch браузером
+      if (e) e.preventDefault(); 
 
-      // Дополнительная скрытая страховка от взлома формы гостями
       if (!currentUser || !currentUserId) {
         alert('Ошибка: Публикация доступна только зарегистрированным участникам!');
         return;
@@ -211,11 +221,11 @@
           canvas.width = width; canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.60);
+          // Повышаем уровень сжатия до 55% качества, чтобы картинка гарантированно пролезала через текстовое поле базы
+          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.55);
           var dateObj = new Date();
           var formattedDate = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + '.' + dateObj.getFullYear();
 
-          // Формируем строгую подпись с ником авторизованного юзера
           var templateTitle = 'Автор: ' + currentUser + roleTag + ', ' + textInput.value.trim() + '... ' + formattedDate;
 
           fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
@@ -223,19 +233,20 @@
             headers: { 
               'apikey': SUPABASE_KEY, 
               'Authorization': 'Bearer ' + SUPABASE_KEY, 
-              'Content-Type': 'application/json', 
+              'Content-Type': 'application/json; charset=utf-8', 
               'Prefer': 'return=minimal' 
             },
             body: JSON.stringify({ text: templateTitle, image: compressedBase64 })
           })
-          .then(function() {
+          .then(function(res) {
+            if (!res.ok) throw new Error('Код сервера: ' + res.status);
             alert('Опубликовано на весь мир!');
             textInput.value = ''; fileInput.value = '';
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
             renderDynamicFeed();
           })
-          .catch(function() {
-            // Резервный перехват на случай задержки шлюза Vercel
+          .catch(function(err) {
+            alert('Ошибка публикации: ' + err.message);
             textInput.value = ''; fileInput.value = '';
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
             setTimeout(renderDynamicFeed, 1000);

@@ -20,6 +20,45 @@
 </head>
 <body>
 <img width="256" height="214" alt="КОТОКАРТИНКА-КОТ" src="https://github.com/user-attachments/assets/cc3496cf-d73a-427f-a735-c512f938c0d0" /> КОТОКАРТИНКА - аналог котоматрицы, но живой<br>
+<!-- Статусная панель авторизации (Вставить внутрь <body>) -->
+<table border="0" cellpadding="5" cellspacing="0" bgcolor="#ffffff" style="border: 1px solid #000; font-family: arial; font-size: 13px;">
+  <tr>
+    <td id="user-status-block">
+      Загрузка статуса...
+    </td>
+  </tr>
+</table>
+<br>
+
+<script>
+  (function() {
+    var statusTd = document.getElementById('user-status-block');
+    var currentUser = localStorage.getItem('koto_current_user');
+    var currentUserId = parseInt(localStorage.getItem('koto_current_id'));
+
+    if (currentUser && currentUserId) {
+      // Определяем тег роли для панели на главной
+      var roleTag = '';
+      if (currentUserId === 1) roleTag = ' <font color="red"><b>[создатель]</b></font>';
+      if (currentUserId === 2) roleTag = ' <font color="gray"><b>[тест]</b></font>';
+
+      statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b>' + roleTag + ' | <a href="/editor.html">создать котоматрицу</a> | <a href="/profile.html">личный кабинет</a> | <a href="#" id="logout-link">выйти</a>';
+      
+      // Логика кнопки выхода
+      document.getElementById('logout-link').onclick = function(e) {
+        e.preventDefault();
+        localStorage.removeItem('koto_current_user');
+        localStorage.removeItem('koto_current_id');
+        alert('Вы вышли из аккаунта.');
+        window.location.reload();
+      };
+    } else {
+      // Если пользователь не авторизован
+      statusTd.innerHTML = 'ты вошел как: <b>Гость</b> | <a href="/login.html"><b>вход</b></a> | <a href="/register.html"><b>регистрация</b></a>';
+    }
+  })();
+</script>
+
 Добро пожаловать в котокартинку!<br>
 ПРАВИЛА КОТОКАРТИНКИ:<br>
 1.никакой пошлости и черного юмора<br>

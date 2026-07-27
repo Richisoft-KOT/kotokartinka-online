@@ -14,14 +14,14 @@
   <a href="index.html">На главную</a> | <a href="editor.html">Создать котокартинку</a><br><br>
 
   <div id="g-block" style="display:none;border:1px dashed #f00;padding:10px;background:#fff;font-family:arial;font-size:13px;text-align:center;">
-    <font color="red"><b>Чтобы добавлять котокартинки в список, пожалуйста, <a href="login.html">ВОЙДИТЕ</a> или <a href="register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
+    <font color="red"><b>Чтобы добавлять котокартинки, <a href="login.html">ВОЙДИТЕ</a> или <a href="register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
   </div>
 
   <table id="f-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display:none;">
-    <tr><td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td></tr>
+    <tr><td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку</b></font></td></tr>
     <tr><td align="right"><font face="arial" size="2">Автор:</font></td><td><b id="u-lbl" style="font-family:arial;font-size:14px;">...</b></td></tr>
-    <tr><td align="right"><font face="arial" size="2">Текст с картинки:</font></td><td><input type="text" id="m-txt" size="60" placeholder="Введите все надписи с картинки"></td></tr>
-    <tr><td align="right"><font face="arial" size="2">Выбрать файл:</font></td><td><input type="file" id="m-file" accept="image/*"></td></tr>
+    <tr><td align="right"><font face="arial" size="2">Текст:</font></td><td><input type="text" id="m-txt" size="60"></td></tr>
+    <tr><td align="right"><font face="arial" size="2">Файл:</font></td><td><input type="file" id="m-file" accept="image/*"></td></tr>
     <tr><td colspan="2" align="center"><button id="pub-btn" style="font-family:arial;font-weight:bold;padding:4px 10px;">ДОБАВИТЬ В СПИСОК!</button></td></tr>
   </table>
   <br><br>
@@ -33,53 +33,26 @@
     var box=document.getElementById('p-box'), fInp=document.getElementById('m-file'), tInp=document.getElementById('m-txt'), btn=document.getElementById('pub-btn');
     var lbl=document.getElementById('u-lbl'), gBlk=document.getElementById('g-block'), tbl=document.getElementById('f-table');
 
-    if(cUser && cId > 0){ 
-      tbl.style.display='table'; 
-      lbl.innerText = cUser + getRoleTag(); 
-    } else { 
-      gBlk.style.display='block'; 
-    }
+    if(cUser && cId > 0){ tbl.style.display='table'; lbl.innerText = cUser + getRoleTag(); } else { gBlk.style.display='block'; }
 
     function loadFeed(){
-      box.innerHTML='<font face="arial" size="2">Загрузка ленты облака...</font>';
-      
-      // ИСПРАВЛЕНО НАПОВАЛ: Вызываем JSON-функцию через безопасный HTTPS метод GET
-      fetch(SUPABASE_URL + '/rest/v1/rpc/get_koto_feed_json', {
-        method: 'GET',
-        headers: { 
-          'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY
-        }
-      })
-      .then(function(r){ 
-        if(!r.ok) throw new Error('Код ответа: ' + r.status);
-        return r.json(); 
-      })
+      box.innerHTML='<font face="arial" size="2">Загрузка ленты...</font>';
+      fetch('/api?type=get_feed')
+      .then(function(r){ return r.json(); })
       .then(function(data) {
         box.innerHTML=''; if(!data||data.length===0){ box.innerHTML='<b>Пока нет глобальных котокартинок. Будь первым!</b>'; return; }
         data.forEach(function(p){
           var d=document.createElement('div'); d.style.marginBottom='40px';
-          var t=document.createElement('div'); t.innerHTML='<b>'+p.text+'</b><br>';
+          var t=document.createElement('div'); t.innerHTML='<b>'+p.title+'</b><br>';
           var i=document.createElement('img'); i.src=p.image; i.style.maxWidth='750px'; i.style.height='auto'; i.style.border='1px solid #000';
           d.appendChild(t); d.appendChild(i);
-          
-          if(isUserAdmin()){
-            var b=document.createElement('button'); b.className='del-btn'; b.textContent='[Удалить котокартинку]';
-            b.onclick=function(){ if(confirm('Удалить этот мем навсегда?')) delPost(p.id); }; d.appendChild(b);
-          }
           var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); box.appendChild(d);
         });
-      })
-      .catch(function(e){ box.innerHTML='<font color="red">Ошибка связи: '+e.message+'</font>'; });
-    }
-
-    function delPost(id){
-      fetch(SUPABASE_URL+'/rest/v1/kotokartinka_posts?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}})
-      .then(function(){alert('Удалено!'); loadFeed();});
+      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка: '+e.message+'</font>'; });
     }
 
     btn.onclick=function(e){
-      if(e)e.preventDefault(); if(!cUser||cId<=0){alert('Ошибка: нужен аккаунт!');return;}
+      if(e)e.preventDefault(); if(!cUser||cId<=0){alert('Нужен аккаунт!');return;}
       if(!fInp.files||fInp.files.length===0||tInp.value.trim()===''){alert('Заполните все поля!');return;}
       btn.disabled=true; btn.innerText='ОТПРАВКА...';
       
@@ -88,12 +61,14 @@
           var cv=document.createElement('canvas'), cx=cv.getContext('2d'), W=700, w=img.width, h=img.height;
           if(w>W){ h=Math.round((h*W)/w); w=W; } cv.width=w; cv.height=h; cx.drawImage(img,0,0,w,h);
           var b64=cv.toDataURL('image/jpeg',0.55), o=new Date(), dt=String(o.getDate()).padStart(2,'0')+'.'+String(o.getMonth()+1).padStart(2,'0')+'.'+o.getFullYear();
-          
           var title='Автор: '+cUser+getRoleTag()+', '+tInp.value.trim()+'... '+dt;
           
-          fetch(SUPABASE_URL+'/rest/v1/rpc/add_koto_feed',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({t:title,img:b64})})
-          .then(function(){
-            alert('Успешно опубликовано на весь мир!'); tInp.value=''; fInp.value=''; btn.disabled=false; btn.innerText='ДОБАВИТЬ В СПИСОК!'; loadFeed();
+          fetch('/api?type=add_post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: title, image: b64 })
+          }).then(function(){
+            alert('Опубликовано!'); tInp.value=''; fInp.value=''; btn.disabled=false; btn.innerText='ДОБАВИТЬ В СПИСОК!'; loadFeed();
           });
         }; img.src=ev.target.result;
       }; r.readAsDataURL(fInp.files);

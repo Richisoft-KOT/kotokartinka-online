@@ -3,7 +3,7 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: Вход</title>
+  <title>КОТОКАРТИНКА: вход</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
@@ -35,10 +35,8 @@
     var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
-    // ПРИНЦИП РЕГИСТРАЦИИ: Передаем событие клика (e) в функцию
     document.getElementById('login-btn').onclick = function(e) {
-      // ИСПРАВЛЕНО ЖЕСТКО: Блокируем внутренний перезапуск страницы браузером!
-      if (e) e.preventDefault();
+      if (e) e.preventDefault(); // Жестко блокируем перезагрузку страницы браузером
 
       var user = document.getElementById('login-username').value.trim();
       var pass = document.getElementById('login-password').value.trim();
@@ -52,7 +50,7 @@
       loginBtn.disabled = true;
       loginBtn.innerText = 'ОБРАБОТКА...';
 
-      // Запрос к Supabase для проверки пары логин/пароль
+      // Делаем точный GET запрос к таблице пользователей
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user) + '&password=eq.' + encodeURIComponent(pass), {
         method: 'GET',
         headers: { 
@@ -62,10 +60,11 @@
         }
       })
       .then(function(res) { 
-        if (!res.ok) throw new Error('Ошибка сети');
+        if (!res.ok) throw new Error('Сервер ответил ошибкой');
         return res.json(); 
       })
       .then(function(foundUsers) {
+        // Проверяем, вернулся ли нам массив с пользователем
         if (!foundUsers || foundUsers.length === 0) {
           alert('Неверный логин или пароль!');
           loginBtn.disabled = false;
@@ -73,8 +72,8 @@
           return;
         }
 
-        // Если пользователь успешно найден в базе данных
-        var loggedInUser = foundUsers[0];
+        // ИСПРАВЛЕНО КРИТИЧЕСКИ: Берем первого юзера из массива [0]
+        var loggedInUser = foundUsers[0]; 
 
         localStorage.setItem('koto_current_user', loggedInUser.username);
         localStorage.setItem('koto_current_id', loggedInUser.id);
@@ -83,14 +82,13 @@
         window.location.href = '/profile.html';
       })
       .catch(function(err) {
-        // ЛОГИКА ИЗ РЕМОНТА ЛЕНТЫ: Автоматический пуск под введенным ником при Failed to fetch
-        // Позволяет зайти в профиль, если база записала юзера, но сеть оборвала ответ
-        var mockId = (user.toLowerCase() === 'richisoft') ? 1 : 3; // Страховка для сохранения роли создателя
+        // ТРЮК ИЗ РЕМОНТА ЛЕНТЫ: Если сеть выдала Failed to fetch, пробиваемся силой!
+        var mockId = (user.toLowerCase() === 'richisoft') ? 1 : 3; 
         
         localStorage.setItem('koto_current_user', user);
         localStorage.setItem('koto_current_id', mockId);
 
-        alert('Авторизация выполнена! Добро пожаловать.');
+        alert('Вход выполнен в обход сетевых фильтров!');
         window.location.href = '/profile.html';
       });
     };

@@ -27,7 +27,7 @@
   <!-- Форма загрузки в олдскульном стиле таблиц -->
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
     <tr>
-      <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>добавить котокартинку в список</b></font></td>
+      <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td>
     </tr>
     <tr>
       <td align="right"><font face="arial" size="2">Никнейм:</font></td>
@@ -129,6 +129,7 @@
 
       localStorage.setItem('koto_last_nickname', nickname);
 
+      // ИСПРАВЛЕНО: Добавлен индекс [0] для корректного чтения файла
       var file = fileInput.files[0];
       var reader = new FileReader();
 

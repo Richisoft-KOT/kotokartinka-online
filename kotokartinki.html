@@ -38,7 +38,13 @@
       <td align="right"><font face="arial" size="2">Ваш Логин:</font></td>
       <td>
         <input type="text" id="manual-author" size="30" value="Аноним">
-        <font size="1" color="gray">(введите Richisoft для прав создателя или Тестер для теста)</font>
+      </td>
+    </tr>
+    <tr id="password-row" style="display: none;">
+      <td align="right"><font color="red" face="arial" size="2">Пароль доступа:</font></td>
+      <td>
+        <input type="password" id="admin-password-input" size="30">
+        <font size="1" color="red">* вход в спец-аккаунт</font>
       </td>
     </tr>
     <tr>
@@ -60,9 +66,7 @@
 
   <br><br>
 
-  <!-- Сюда JavaScript автоматически подгружает новые добавленные картинки -->
   <div id="dynamic-posts-container"></div>
-
   <div id="static-posts"></div>
 
 <br>
@@ -72,12 +76,27 @@
     var container = document.getElementById('dynamic-posts-container');
     var fileInput = document.getElementById('manual-file');
     var authorInput = document.getElementById('manual-author');
+    var passwordRow = document.getElementById('password-row');
+    var passwordInput = document.getElementById('admin-password-input');
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
 
-    // Восстанавливаем последний использованный логин из памяти устройства
+    // СЕКРЕТНЫЕ ПАРОЛИ ДЛЯ ЗАЩИТЫ АДМИНИСТРАЦИИ (можно поменять на свои)
+    var PASS_CREATOR = 'richi2026';
+    var PASS_TESTER = 'test2026';
+
     if (localStorage.getItem('koto_last_nickname')) {
       authorInput.value = localStorage.getItem('koto_last_nickname');
+    }
+
+    // Следим за вводом логина, чтобы вовремя включить проверку пароля
+    function checkLoginStatus() {
+      var login = authorInput.value.trim().toLowerCase();
+      if (login === 'richisoft' || login === 'тестер') {
+        passwordRow.style.display = 'table-row';
+      } else {
+        passwordRow.style.display = 'none';
+      }
     }
 
     function renderDynamicFeed() {
@@ -89,9 +108,13 @@
         posts = [];
       }
 
-      // Определяем права текущего введённого логина на лету
       var currentLogin = authorInput.value.trim().toLowerCase();
-      var isGlobalAdmin = (currentLogin === 'richisoft' || currentLogin === 'тестер');
+      var currentPass = passwordInput.value.trim();
+
+      // Права администратора включаются только если введен правильный пароль!
+      var isCreator = (currentLogin === 'richisoft' && currentPass === PASS_CREATOR);
+      var isTester = (currentLogin === 'тестер' && currentPass === PASS_TESTER);
+      var isGlobalAdmin = (isCreator || isTester);
 
       posts.forEach(function(post, idx) {
         var postDiv = document.createElement('div');
@@ -111,16 +134,15 @@
         postDiv.appendChild(titleNode);
         postDiv.appendChild(imgNode);
 
-        // Если в поле «Логин» указан Richisoft или Тестер, под каждым постом появится кнопка удаления
         if (isGlobalAdmin) {
           var delBtn = document.createElement('button');
           delBtn.className = 'admin-del-btn';
           delBtn.textContent = '[Удалить эту котокартинку]';
           delBtn.onclick = function() {
             if (confirm('Удалить эту котокартинку из ленты?')) {
-              posts.splice(idx, 1); // Удаляем элемент из массива по индексу
+              posts.splice(idx, 1);
               localStorage.setItem('kotomatrix_posts', JSON.stringify(posts));
-              renderDynamicFeed(); // Перерисовываем ленту
+              renderDynamicFeed();
             }
           };
           postDiv.appendChild(delBtn);
@@ -135,10 +157,11 @@
       });
     }
 
-    // Перерисовывать ленту прямо во время ввода логина, чтобы кнопки удаления появлялись мгновенно
     authorInput.oninput = function() {
+      checkLoginStatus();
       renderDynamicFeed();
     };
+    passwordInput.oninput = renderDynamicFeed;
 
     publishBtn.onclick = function(e) {
       if (e) e.preventDefault();
@@ -150,9 +173,20 @@
 
       var nickname = authorInput.value.trim();
       var userText = textInput.value.trim();
+      var pass = passwordInput.value.trim();
 
       if (nickname === '' || userText === '') {
         alert('Заполните логин и текст!');
+        return;
+      }
+
+      // ЖЕСТКАЯ ЗАЩИТА: Проверяем подлинность Создателя и Тестера перед отправкой
+      if (nickname.toLowerCase() === 'richisoft' && pass !== PASS_CREATOR) {
+        alert('Ошибка: Неверный пароль доступа для аккаунта Richisoft!');
+        return;
+      }
+      if (nickname.toLowerCase() === 'тестер' && pass !== PASS_TESTER) {
+        alert('Ошибка: Неверный пароль доступа для аккаунта Тестер!');
         return;
       }
 
@@ -180,16 +214,11 @@
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Сжимаем фото до оптимального веса для локальной памяти
           var compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
 
           var dateObj = new Date();
-          var day = String(dateObj.getDate()).padStart(2, '0');
-          var month = String(dateObj.getMonth() + 1).padStart(2, '0');
-          var year = dateObj.getFullYear();
-          var formattedDate = day + '.' + month + '.' + year;
+          var formattedDate = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + '.' + dateObj.getFullYear();
 
-          // Автоматически подставляем статусную метку в заголовок поста при публикации
           var displayNickname = nickname;
           if (nickname.toLowerCase() === 'richisoft') {
             displayNickname = 'Richisoft [создатель]';
@@ -199,11 +228,7 @@
 
           var templateTitle = 'Автор: ' + displayNickname + ', ' + userText + '... ' + formattedDate;
 
-          var newPost = {
-            image: compressedBase64,
-            title: templateTitle
-          };
-
+          var newPost = { image: compressedBase64, title: templateTitle };
           var currentPosts = [];
           try {
             currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
@@ -216,22 +241,23 @@
           try {
             localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
           } catch(e) {
-            alert('Локальное хранилище переполнено! Пожалуйста, используйте картинку меньшего размера или очистите старые посты.');
+            alert('Хранилище переполнено!');
             return;
           }
 
           textInput.value = '';
           fileInput.value = '';
+          passwordInput.value = '';
           
+          checkLoginStatus();
           renderDynamicFeed();
         };
-        
         img.src = event.target.result;
       };
-
       reader.readAsDataURL(file);
     };
 
+    checkLoginStatus();
     renderDynamicFeed();
   </script>
 </body>

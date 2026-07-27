@@ -1,76 +1,4 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="windows-1251">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: просмотр</title>
-  <style>
-    body {
-      font-family: arial;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
-      line-height: 1.6;
-      background-color: #fff2e3;
-      color: #333
-    }
-    img {
-      display: block;
-      margin: 20px 0;
-    }
-    .admin-del-btn {
-      background: #ff0000; color: #fff; border: 1px solid #000;
-      font-family: arial; font-size: 11px; font-weight: bold;
-      cursor: pointer; padding: 2px 5px; margin-top: 5px;
-    }
-  </style>
-</head>
-<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
-
-<a href="/index.html">На главную</a> | <a href="/editor.html">Создать котокартинку</a><br><br>
-
-  <!-- Блок для неавторизованных пользователей -->
-  <div id="guest-alert-block" style="display: none; border: 1px dashed #ff0000; padding: 10px; background-color: #fff; font-family: arial; font-size: 13px; text-align: center;">
-    <font color="red"><b>Чтобы добавлять котокартинки в список, пожалуйста, <a href="/login.html">ВОЙДИТЕ</a> или <a href="/register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
-  </div>
-
-  <!-- Форма загрузки -->
-  <table id="upload-form-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display: none;">
-    <tr>
-      <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td>
-    </tr>
-    <tr>
-      <td align="right"><font face="arial" size="2">Автор:</font></td>
-      <td><b id="author-label">Загрузка...</b></td>
-    </tr>
-    <tr>
-      <td align="right"><font face="arial" size="2">Текст с картинки:</font></td>
-      <td><input type="text" id="manual-text" size="60" placeholder="Введите все надписи, которые есть на картинке"></td>
-    </tr>
-    <tr>
-      <td align="right"><font face="arial" size="2">Выбрать файл:</font></td>
-      <td><input type="file" id="manual-file" accept="image/*"></td>
-    </tr>
-    <tr>
-      <td colspan="2" align="center">
-        <button id="manual-publish-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
-          ДОБАВИТЬ В СПИСОК!
-        </button>
-      </td>
-    </tr>
-  </table>
-
-  <br><br>
-
-  <!-- Лента постов из Supabase -->
-  <div id="dynamic-posts-container"></div>
-
-  <div id="static-posts"></div>
-
-<br>
-СДЕЛАНО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год
-
-  <script>
+<script>
     var container = document.getElementById('dynamic-posts-container');
     var fileInput = document.getElementById('manual-file');
     var textInput = document.getElementById('manual-text');
@@ -102,8 +30,8 @@
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      // ИСПРАВЛЕНО: Явно заставляем сетевой шлюз принимать заголовки в UTF-8 кодировке
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
+      // ИСПРАВЛЕНО ЖЕСТКО: Запрашиваем только конкретные текстовые колонки id, text и image вместо *
+      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc', {
         method: 'GET',
         headers: { 
           'apikey': SUPABASE_KEY, 
@@ -161,7 +89,6 @@
         });
       })
       .catch(function(err) {
-        // Выводим точную техническую причину для моментальной отладки
         container.innerHTML = '<font color="red">Ошибка загрузки ленты облака: ' + err.message + '. Убедитесь, что RLS отключен.</font>';
       });
     }
@@ -221,7 +148,6 @@
           canvas.width = width; canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Повышаем уровень сжатия до 55% качества, чтобы картинка гарантированно пролезала через текстовое поле базы
           var compressedBase64 = canvas.toDataURL('image/jpeg', 0.55);
           var dateObj = new Date();
           var formattedDate = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + '.' + dateObj.getFullYear();
@@ -258,6 +184,4 @@
     };
 
     renderDynamicFeed();
-  </script>
-</body>
-</html>
+</script>

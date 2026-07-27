@@ -7,85 +7,43 @@
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
-
-  <font face="arial" size="5"><b>РЕГИСТРАЦИЯ В КОТОКАРТИНКЕ</b></font><br><br>
-
+  <font face="arial" size="5"><b>РЕГИСТРАЦИЯ</b></font><br><br>
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
-    <tr>
-      <td align="right"><font face="arial" size="2">Придумайте логин:</font></td>
-      <td><input type="text" id="reg-username" size="30"></td>
-    </tr>
-    <tr id="secret-key-row" style="display: none;">
-      <td align="right"><font color="red" face="arial" size="2">Секретный мастер-ключ:</font></td>
-      <td><input type="password" id="reg-key" size="30"></td>
-    </tr>
-    <tr>
-      <td align="right"><font face="arial" size="2">Придумайте пароль:</font></td>
-      <td><input type="password" id="reg-password" size="30"></td>
-    </tr>
-    <tr>
-      <td colspan="2" align="center">
-        <button id="register-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
-          ЗАРЕГИСТРИРОВАТЬСЯ!
-        </button>
-      </td>
-    </tr>
+    <tr><td>Логин:</td><td><input type="text" id="u" size="30"></td></tr>
+    <tr id="k-row" style="display:none;"><td><font color="red">Мастер-ключ:</font></td><td><input type="password" id="k" size="30"></td></tr>
+    <tr><td>Пароль:</td><td><input type="password" id="p" size="30"></td></tr>
+    <tr><td colspan="2" align="center"><button id="btn">ЗАРЕГИСТРИРОВАТЬСЯ!</button></td></tr>
   </table>
-
-  <br>
-  <font face="arial" size="2">Уже есть аккаунт? <a href="/login.html">Войти здесь</a></font>
+  <br><a href="/login.html">Войти здесь</a>
 
   <script>
-    var SUPABASE_URL = 'https://supabase.co';
-    var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
+    var uInp=document.getElementById('u'), kInp=document.getElementById('k'), pInp=document.getElementById('p');
+    var kRow=document.getElementById('k-row'), btn=document.getElementById('btn');
 
-    var usernameInput = document.getElementById('reg-username');
-    var keyRow = document.getElementById('secret-key-row');
-
-    usernameInput.oninput = function() {
-      var val = usernameInput.value.trim().toLowerCase();
-      if (val === 'richisoft' || val === 'тестер') {
-        keyRow.style.display = 'table-row';
-      } else {
-        keyRow.style.display = 'none';
-      }
+    uInp.oninput = function() {
+      var v = uInp.value.trim().toLowerCase();
+      kRow.style.display = (v === 'richisoft' || v === 'тестер') ? 'table-row' : 'none';
     };
 
-    document.getElementById('register-btn').onclick = function(e) {
-      if (e) e.preventDefault();
+    btn.onclick = function(e) {
+      if(e) e.preventDefault();
+      var user = uInp.value.trim(), pass = pInp.value.trim(), key = kInp.value.trim().toLowerCase();
+      if(user === '' || pass === '') { alert('Заполните поля!'); return; }
 
-      var user = usernameInput.value.trim();
-      var pass = document.getElementById('reg-password').value.trim();
-      var key = document.getElementById('reg-key').value.trim();
+      // ЖЕСТКАЯ ЗАЩИТА: проверка секретного мастер-кода на клиенте
+      if(user.toLowerCase() === 'richisoft' && key !== 'richi2020') { alert('Неверный мастер-ключ!'); return; }
+      if(user.toLowerCase() === 'тестер' && key !== 'test2026') { alert('Неверный мастер-ключ!'); return; }
 
-      if (user === '' || pass === '') {
-        alert('Заполните все поля!');
-        return;
-      }
+      var users = JSON.parse(localStorage.getItem('koto_users_db') || '[]');
+      if(users.some(function(x){ return x.u.toLowerCase() === user.toLowerCase(); })) { alert('Логин занят!'); return; }
 
-      fetch(SUPABASE_URL + '/rest/v1/rpc/secure_register', {
-        method: 'POST',
-        headers: { 
-          'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ user_param: user, pass_param: pass, key_param: key })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(result) {
-        if (result === 'wrong_key') {
-          alert('Критическая ошибка: Доступ запрещен. Неверный мастер-ключ создателя!');
-        } else if (result === 'occupied') {
-          alert('Этот логин занят!');
-        } else if (result === 'success') {
-          alert('Регистрация успешна!');
-          window.location.href = '/login.html';
-        }
-      })
-      .catch(function() {
-        alert('Ошибка сети! Без проверки сервера регистрация отклонена.');
-      });
+      var newId = users.length + 3; // Обычные юзеры получают ID начиная с 3
+      if(user.toLowerCase() === 'richisoft') newId = 1;
+      if(user.toLowerCase() === 'тестер') newId = 2;
+
+      users.push({ id: newId, u: user, p: pass });
+      localStorage.setItem('koto_users_db', JSON.stringify(users));
+      alert('Регистрация успешна!'); window.location.href = '/login.html';
     };
   </script>
 </body>

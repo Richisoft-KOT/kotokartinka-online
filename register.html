@@ -15,6 +15,10 @@
       <td align="right"><font face="arial" size="2">Придумайте логин:</font></td>
       <td><input type="text" id="reg-username" size="30"></td>
     </tr>
+    <tr id="secret-key-row" style="display: none;">
+      <td align="right"><font color="red" face="arial" size="2">Секретный мастер-ключ:</font></td>
+      <td><input type="password" id="reg-key" size="30"></td>
+    </tr>
     <tr>
       <td align="right"><font face="arial" size="2">Придумайте пароль:</font></td>
       <td><input type="password" id="reg-password" size="30"></td>
@@ -35,70 +39,54 @@
     var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
-    // ИСПРАВЛЕНО: Передаем событие клика (e) в функцию
+    var usernameInput = document.getElementById('reg-username');
+    var keyRow = document.getElementById('secret-key-row');
+
+    usernameInput.oninput = function() {
+      var val = usernameInput.value.trim().toLowerCase();
+      if (val === 'richisoft' || val === 'тестер') {
+        keyRow.style.display = 'table-row';
+      } else {
+        keyRow.style.display = 'none';
+      }
+    };
+
     document.getElementById('register-btn').onclick = function(e) {
-      // ИСПРАВЛЕНО ЖЕСТКО: Блокируем внутренний перезапуск страницы браузером!
       if (e) e.preventDefault();
 
-      var user = document.getElementById('reg-username').value.trim();
+      var user = usernameInput.value.trim();
       var pass = document.getElementById('reg-password').value.trim();
+      var key = document.getElementById('reg-key').value.trim();
 
       if (user === '' || pass === '') {
         alert('Заполните все поля!');
         return;
       }
 
-      var registerBtn = document.getElementById('register-btn');
-      registerBtn.disabled = true;
-      registerBtn.innerText = 'ОБРАБОТКА...';
-
-      // Теперь запрос выполнится стабильно без сетевого обрыва со стороны браузера
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user), {
-        method: 'GET',
+      fetch(SUPABASE_URL + '/rest/v1/rpc/secure_register', {
+        method: 'POST',
         headers: { 
           'apikey': SUPABASE_KEY, 
           'Authorization': 'Bearer ' + SUPABASE_KEY,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ user_param: user, pass_param: pass, key_param: key })
       })
-      .then(function(res) { 
-        return res.json().catch(function() { return []; }); 
-      })
-      .then(function(existingUsers) {
-        if (existingUsers && existingUsers.length > 0) {
-          alert('Этот логин занят! Придумайте другой.');
-          registerBtn.disabled = false;
-          registerBtn.innerText = 'ЗАРЕГИСТРИРОВАТЬСЯ!';
-          return;
+      .then(function(res) { return res.json(); })
+      .then(function(result) {
+        if (result === 'wrong_key') {
+          alert('Критическая ошибка: Доступ запрещен. Неверный мастер-ключ создателя!');
+        } else if (result === 'occupied') {
+          alert('Этот логин занят!');
+        } else if (result === 'success') {
+          alert('Регистрация успешна!');
+          window.location.href = '/login.html';
         }
-        sendData(user, pass);
       })
       .catch(function() {
-        sendData(user, pass);
+        alert('Ошибка сети! Без проверки сервера регистрация отклонена.');
       });
     };
-
-    function sendData(user, pass) {
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users', {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ username: user, password: pass })
-      })
-      .then(function() {
-        alert('Регистрация завершена успешно!');
-        window.location.href = '/login.html';
-      })
-      .catch(function() { 
-        // Логика автоперехода из кода ремонта ленты
-        alert('Учетная запись создана! Переходим к авторизации.');
-        window.location.href = '/login.html';
-      });
-    }
   </script>
 </body>
 </html>

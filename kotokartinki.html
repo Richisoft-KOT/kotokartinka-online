@@ -29,22 +29,21 @@
 
 <a href="/index.html">На главную</a> | <a href="/editor.html">Создать котокартинку</a><br><br>
 
-  <!-- Форма загрузки в олдскульном стиле таблиц -->
-  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
+  <!-- Блок для неавторизованных пользователей (Гостей) -->
+  <div id="guest-alert-block" style="display: none; border: 1px dashed #ff0000; padding: 10px; background-color: #fff; font-family: arial; font-size: 13px; text-align: center;">
+    <font color="red"><b>Чтобы добавлять котокартинки в список, пожалуйста, <a href="/login.html">ВОЙДИТЕ</a> или <a href="/register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
+  </div>
+
+  <!-- Форма загрузки (Доступна ТОЛЬКО авторизованным) -->
+  <table id="upload-form-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display: none;">
     <tr>
       <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td>
     </tr>
     <tr>
-      <td align="right"><font face="arial" size="2">Ваш Логин:</font></td>
+      <td align="right"><font face="arial" size="2">Вы вошли как:</font></td>
       <td>
-        <input type="text" id="manual-author" size="30" value="Аноним">
-      </td>
-    </tr>
-    <tr id="password-row" style="display: none;">
-      <td align="right"><font color="red" face="arial" size="2">Пароль доступа:</font></td>
-      <td>
-        <input type="password" id="admin-password-input" size="30">
-        <font size="1" color="red">* вход в спец-аккаунт</font>
+        <!-- Текстового поля больше НЕТ. Логин выводится жестко без возможности изменения -->
+        <b id="author-secure-label" style="font-family: arial; font-size: 14px;">Загрузка профиля...</b>
       </td>
     </tr>
     <tr>
@@ -66,6 +65,7 @@
 
   <br><br>
 
+  <!-- Контейнер для вывода загруженных постов -->
   <div id="dynamic-posts-container"></div>
   <div id="static-posts"></div>
 
@@ -75,29 +75,37 @@
   <script>
     var container = document.getElementById('dynamic-posts-container');
     var fileInput = document.getElementById('manual-file');
-    var authorInput = document.getElementById('manual-author');
-    var passwordRow = document.getElementById('password-row');
-    var passwordInput = document.getElementById('admin-password-input');
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
+    
+    var authorSecureLabel = document.getElementById('author-secure-label');
+    var guestAlertBlock = document.getElementById('guest-alert-block');
+    var uploadFormTable = document.getElementById('upload-form-table');
 
-    // СЕКРЕТНЫЕ ПАРОЛИ ДЛЯ ЗАЩИТЫ АДМИНИСТРАЦИИ (можно поменять на свои)
-    var PASS_CREATOR = 'richi2026';
-    var PASS_TESTER = 'test2026';
+    // ЖЕСТКАЯ ПРИВЯЗКА: Вытаскиваем авторизационные токены из сессии аккаунта
+    var currentUser = localStorage.getItem('koto_current_user');
+    var currentUserId = parseInt(localStorage.getItem('koto_current_id')) || 0;
 
-    if (localStorage.getItem('koto_last_nickname')) {
-      authorInput.value = localStorage.getItem('koto_last_nickname');
+    var roleTag = '';
+    // Системная проверка ролей на клиенте на основе ID аккаунта
+    if (currentUserId === 1) {
+      roleTag = ' [создатель]';
+    } else if (currentUserId === 2) {
+      roleTag = ' [тест]';
     }
 
-    // Следим за вводом логина, чтобы вовремя включить проверку пароля
-    function checkLoginStatus() {
-      var login = authorInput.value.trim().toLowerCase();
-      if (login === 'richisoft' || login === 'тестер') {
-        passwordRow.style.display = 'table-row';
-      } else {
-        passwordRow.style.display = 'none';
-      }
+    // Проверяем статус входа
+    if (currentUser && currentUserId) {
+      // Пользователь авторизован — открываем форму и блокируем поле имени
+      uploadFormTable.style.display = 'table';
+      authorSecureLabel.innerText = currentUser + roleTag;
+    } else {
+      // Пользователь не вошел — блокируем интерфейс, выводим предупреждение
+      guestAlertBlock.style.display = 'block';
     }
+
+    // Роль админа на удаление постов выдается строго ID 1 и ID 2
+    var isGlobalAdmin = (currentUserId === 1 || currentUserId === 2);
 
     function renderDynamicFeed() {
       container.innerHTML = '';
@@ -107,14 +115,6 @@
       } catch(e) {
         posts = [];
       }
-
-      var currentLogin = authorInput.value.trim().toLowerCase();
-      var currentPass = passwordInput.value.trim();
-
-      // Права администратора включаются только если введен правильный пароль!
-      var isCreator = (currentLogin === 'richisoft' && currentPass === PASS_CREATOR);
-      var isTester = (currentLogin === 'тестер' && currentPass === PASS_TESTER);
-      var isGlobalAdmin = (isCreator || isTester);
 
       posts.forEach(function(post, idx) {
         var postDiv = document.createElement('div');
@@ -134,6 +134,7 @@
         postDiv.appendChild(titleNode);
         postDiv.appendChild(imgNode);
 
+        // Кнопка удаления рендерится только под админской сессией (ID 1 или 2)
         if (isGlobalAdmin) {
           var delBtn = document.createElement('button');
           delBtn.className = 'admin-del-btn';
@@ -157,40 +158,25 @@
       });
     }
 
-    authorInput.oninput = function() {
-      checkLoginStatus();
-      renderDynamicFeed();
-    };
-    passwordInput.oninput = renderDynamicFeed;
-
     publishBtn.onclick = function(e) {
       if (e) e.preventDefault();
+
+      // Жесткая проверка безопасности перед записью в локальную базу
+      if (!currentUser || !currentUserId) {
+        alert('Ошибка доступа: Публикация разрешена только авторизованным аккаунтам!');
+        return;
+      }
 
       if (!fileInput.files || fileInput.files.length === 0) {
         alert('Сначала выберите файл картинки!');
         return;
       }
 
-      var nickname = authorInput.value.trim();
       var userText = textInput.value.trim();
-      var pass = passwordInput.value.trim();
-
-      if (nickname === '' || userText === '') {
-        alert('Заполните логин и текст!');
+      if (userText === '') {
+        alert('Введите текст, нанесенный на картинку!');
         return;
       }
-
-      // ЖЕСТКАЯ ЗАЩИТА: Проверяем подлинность Создателя и Тестера перед отправкой
-      if (nickname.toLowerCase() === 'richisoft' && pass !== PASS_CREATOR) {
-        alert('Ошибка: Неверный пароль доступа для аккаунта Richisoft!');
-        return;
-      }
-      if (nickname.toLowerCase() === 'тестер' && pass !== PASS_TESTER) {
-        alert('Ошибка: Неверный пароль доступа для аккаунта Тестер!');
-        return;
-      }
-
-      localStorage.setItem('koto_last_nickname', nickname);
 
       var file = fileInput.files[0];
       var reader = new FileReader();
@@ -214,21 +200,23 @@
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
+          // Стабильное сжатие картинки
           var compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
 
           var dateObj = new Date();
-          var formattedDate = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + '.' + dateObj.getFullYear();
+          var day = String(dateObj.getDate()).padStart(2, '0');
+          var month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          var year = dateObj.getFullYear();
+          var formattedDate = day + '.' + month + '.' + year;
 
-          var displayNickname = nickname;
-          if (nickname.toLowerCase() === 'richisoft') {
-            displayNickname = 'Richisoft [создатель]';
-          } else if (nickname.toLowerCase() === 'тестер') {
-            displayNickname = 'Тестер [тест]';
-          }
+          // Подпись формируется строго на основе системного имени вошедшего юзера
+          var templateTitle = 'Автор: ' + currentUser + roleTag + ', ' + userText + '... ' + formattedDate;
 
-          var templateTitle = 'Автор: ' + displayNickname + ', ' + userText + '... ' + formattedDate;
+          var newPost = {
+            image: compressedBase64,
+            title: templateTitle
+          };
 
-          var newPost = { image: compressedBase64, title: templateTitle };
           var currentPosts = [];
           try {
             currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
@@ -241,23 +229,21 @@
           try {
             localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
           } catch(e) {
-            alert('Хранилище переполнено!');
+            alert('Хранилище переполнено! Используйте картинку поменьше.');
             return;
           }
 
           textInput.value = '';
           fileInput.value = '';
-          passwordInput.value = '';
           
-          checkLoginStatus();
           renderDynamicFeed();
         };
         img.src = event.target.result;
       };
+
       reader.readAsDataURL(file);
     };
 
-    checkLoginStatus();
     renderDynamicFeed();
   </script>
 </body>

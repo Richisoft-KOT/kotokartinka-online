@@ -79,7 +79,8 @@
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      fetch(SUPABASE_URL + '/rest/v1/kotomatrix_posts?select=*&order=id.desc', {
+      // ИСПРАВЛЕНО: имя таблицы изменено на kotokartinka_posts
+      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -100,7 +101,7 @@
 
           var titleNode = document.createElement('div');
           var boldNode = document.createElement('b');
-          boldNode.textContent = post.text; // Используем имя 'text' из твоей структуры
+          boldNode.textContent = post.text; // Твоя колонка text
           titleNode.appendChild(boldNode);
           
           var imgNode = document.createElement('img');
@@ -178,8 +179,8 @@
 
           var templateTitle = 'Автор: ' + nickname + ', ' + userText + '... ' + formattedDate;
 
-          // Отправка запроса в Supabase
-          fetch(SUPABASE_URL + '/rest/v1/kotomatrix_posts', {
+          // ИСПРАВЛЕНО: имя таблицы изменено на kotokartinka_posts
+          fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
             method: 'POST',
             headers: {
               'apikey': SUPABASE_KEY,
@@ -188,7 +189,7 @@
               'Prefer': 'return=minimal'
             },
             body: JSON.stringify({
-              text: templateTitle, // Твое имя колонки
+              text: templateTitle, // Твое имя колонки text
               image: compressedBase64
             })
           })

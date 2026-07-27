@@ -52,7 +52,7 @@
 
   <br><br>
 
-  <!-- Сюда JavaScript автоматически подгружает новые добавленные картинки -->
+  <!-- Сюда подгружаются глобальные посты из Supabase -->
   <div id="dynamic-posts-container"></div>
 
   <div id="static-posts"></div>
@@ -67,41 +67,66 @@
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
 
+    // Настройки твоей базы Supabase
+    var SUPABASE_URL = 'https://supabase.co';
+    var SUPABASE_KEY = 'ВСТАВЬ_СЮДА_СВОЙ_ANON_PUBLIC_КЛЮЧ'; 
+
     if (localStorage.getItem('koto_last_nickname')) {
       authorInput.value = localStorage.getItem('koto_last_nickname');
     }
 
+    // Загрузка постов из глобального облака
     function renderDynamicFeed() {
-      container.innerHTML = '';
-      var posts = [];
-      try {
-        posts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
-      } catch(e) {
-        posts = [];
-      }
+      container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
+      
+      fetch(SUPABASE_URL + '/rest/v1/kotomatrix_posts?select=*&order=id.desc', {
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(posts) {
+        container.innerHTML = '';
+        if (!posts || posts.length === 0) {
+          container.innerHTML = '<font face="arial" size="3">Пока нет ни одной глобальной котокартинки.</font>';
+          return;
+        }
 
-      posts.forEach(function(post) {
-        var postDiv = document.createElement('div');
-        postDiv.style.marginBottom = '20px';
+        posts.forEach(function(post) {
+          var postDiv = document.createElement('div');
+          postDiv.style.marginBottom = '40px';
 
-        var titleNode = document.createElement('div');
-        var boldNode = document.createElement('b');
-        boldNode.textContent = post.title; 
-        titleNode.appendChild(boldNode);
-        
-        var imgNode = document.createElement('img');
-        imgNode.src = post.image;
-        imgNode.style.maxWidth = '750px';
-        imgNode.style.height = 'auto';
+          var titleNode = document.createElement('div');
+          var boldNode = document.createElement('b');
+          boldNode.textContent = post.text; // Используем имя 'text' из твоей структуры
+          titleNode.appendChild(boldNode);
+          
+          var imgNode = document.createElement('img');
+          imgNode.src = post.image;
+          imgNode.style.maxWidth = '750px';
+          imgNode.style.height = 'auto';
+          imgNode.style.border = '1px solid #000';
 
-        postDiv.appendChild(titleNode);
-        postDiv.appendChild(imgNode);
-        postDiv.appendChild(document.createElement('br'));
+          postDiv.appendChild(titleNode);
+          postDiv.appendChild(imgNode);
+          postDiv.appendChild(document.createElement('br'));
+          
+          var hr = document.createElement('hr');
+          hr.setAttribute('align', 'left');
+          hr.setAttribute('width', '750');
+          postDiv.appendChild(hr);
 
-        container.appendChild(postDiv);
+          container.appendChild(postDiv);
+        });
+      })
+      .catch(function(err) {
+        container.innerHTML = '<font color="red">Ошибка загрузки ленты. Проверь API ключ.</font>';
       });
     }
 
+    // Публикация в глобальное облако
     publishBtn.onclick = function() {
       if (!fileInput.files || fileInput.files.length === 0) {
         alert('Сначала выберите файл картинки!');
@@ -117,6 +142,8 @@
       }
 
       localStorage.setItem('koto_last_nickname', nickname);
+      publishBtn.disabled = true;
+      publishBtn.innerText = 'ОТПРАВКА...';
 
       var file = fileInput.files[0];
       var reader = new FileReader();
@@ -124,11 +151,9 @@
       reader.onload = function(event) {
         var img = new Image();
         img.onload = function() {
-          // Настройка сжатия на Canvas
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
 
-          // Целевая ширина сжатого фото (800px вполне достаточно для веба)
           var MAX_WIDTH = 800;
           var width = img.width;
           var height = img.height;
@@ -140,12 +165,10 @@
 
           canvas.width = width;
           canvas.height = height;
-
-          // Рисуем картинку на холсте с новыми размерами
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Конвертируем в JPEG с качеством 70% (0.7) для максимального сжатия массы файла
-          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          // Сжимаем до 65% качества, чтобы точно пролезало в базу в виде текста
+          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
 
           var dateObj = new Date();
           var day = String(dateObj.getDate()).padStart(2, '0');
@@ -155,36 +178,36 @@
 
           var templateTitle = 'Автор: ' + nickname + ', ' + userText + '... ' + formattedDate;
 
-          var newPost = {
-            image: compressedBase64,
-            title: templateTitle
-          };
-
-          var currentPosts = [];
-          try {
-            currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
-          } catch(e) {
-            currentPosts = [];
-          }
-          
-          currentPosts.unshift(newPost);
-          
-          try {
-            localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
-          } catch(e) {
-            alert('Даже после сжатия хранилище переполнено. Попробуйте очистить историю браузера или загрузить другое фото.');
-            return;
-          }
-
-          textInput.value = '';
-          fileInput.value = '';
-          
-          renderDynamicFeed();
+          // Отправка запроса в Supabase
+          fetch(SUPABASE_URL + '/rest/v1/kotomatrix_posts', {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_KEY,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              text: templateTitle, // Твое имя колонки
+              image: compressedBase64
+            })
+          })
+          .then(function() {
+            alert('Успешно опубликовано на весь мир!');
+            textInput.value = '';
+            fileInput.value = '';
+            publishBtn.disabled = false;
+            publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
+            renderDynamicFeed();
+          })
+          .catch(function(err) {
+            alert('Ошибка отправки!');
+            publishBtn.disabled = false;
+            publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
+          });
         };
-        
         img.src = event.target.result;
       };
-
       reader.readAsDataURL(file);
     };
 

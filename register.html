@@ -3,7 +3,7 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: регистрация</title>
+  <title>КОТОКАРТИНКА: Регистрация</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
@@ -44,7 +44,7 @@
         return;
       }
 
-      // Безопасная проверка занятости логина через оператор точного совпадения eq.
+      // 1. Проверяем, свободен ли логин с полными заголовками Bearer
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user), {
         method: 'GET',
         headers: { 
@@ -55,7 +55,7 @@
       })
       .then(function(res) { 
         if (!res.ok) {
-          throw new Error('Ошибка проверки имени. Код: ' + res.status);
+          throw new Error('Ошибка проверки. Код: ' + res.status);
         }
         return res.json(); 
       })
@@ -65,7 +65,7 @@
           return;
         }
 
-        // Запись нового аккаунта в Supabase
+        // 2. Если свободен — записываем с полным набором заголовков
         fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users', {
           method: 'POST',
           headers: {
@@ -78,17 +78,17 @@
         })
         .then(function(response) {
           if (!response.ok) {
-            throw new Error('Ошибка записи в базу. Код: ' + response.status);
+            throw new Error('Ошибка записи. Код: ' + response.status);
           }
           alert('Регистрация успешна! Теперь войдите в аккаунт.');
           window.location.href = '/login.html';
         })
         .catch(function(err) { 
-          alert('Не удалось сохранить пользователя: ' + err.message); 
+          alert('Не удалось сохранить: ' + err.message); 
         });
       })
       .catch(function(err) {
-        alert('Критическая ошибка связи с сервером: ' + err.message);
+        alert('Ошибка связи с базой данных: ' + err.message);
       });
     };
   </script>

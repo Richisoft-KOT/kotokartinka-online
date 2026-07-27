@@ -8,7 +8,7 @@
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
 
-  <font face="arial" size="5"><b>РЕГИСТРАЦИЯ</b></font><br><br>
+  <font face="arial" size="5"><b>РЕГИСТРАЦИЯ В КОТОКАРТИНКЕ</b></font><br><br>
 
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
     <tr>
@@ -32,7 +32,8 @@
   <font face="arial" size="2">Уже есть аккаунт? <a href="/login.html">Войти здесь</a></font>
 
   <script>
-    var SUPABASE_URL = 'https://qcdvfeyolqwgmknrjakr.supabase.co';
+    // ТВОЙ ТОЧНЫЙ АДРЕС И КЛЮЧ УЖЕ ЗДЕСЬ:
+    var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
     document.getElementById('register-btn').onclick = function() {
@@ -44,36 +45,39 @@
         return;
       }
 
-      // Проверяем, существует ли уже такой логин в глобальной базе
+      // Проверяем, свободен ли логин в Supabase
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=ilike.' + encodeURIComponent(user), {
         method: 'GET',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        headers: { 
+          'apikey': SUPABASE_KEY, 
+          'Authorization': 'Bearer ' + SUPABASE_KEY 
+        }
       })
       .then(function(res) { return res.json(); })
       .then(function(existingUsers) {
-        if (posts && existingUsers.length > 0) {
-          alert('Этот логин уже занят!');
+        if (existingUsers && existingUsers.length > 0) {
+          alert('Этот логин занят! Придумайте другой.');
           return;
         }
 
-        // Если логин свободен, записываем в Supabase
-        return fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users', {
+        // Регистрируем нового пользователя
+        fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users', {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ username: user, password: pass })
+        })
+        .then(function() {
+          alert('Регистрация успешна! Теперь войдите в аккаунт.');
+          window.location.href = '/login.html';
+        })
+        .catch(function() { 
+          alert('Ошибка при сохранении пользователя!'); 
         });
-      })
-      .then(function(res) {
-        if (!res) return;
-        alert('Регистрация успешна! Теперь вы можете войти.');
-        window.location.href = '/login.html';
-      })
-      .catch(function() { alert('Ошибка при регистрации!'); });
+      });
     };
   </script>
 </body>

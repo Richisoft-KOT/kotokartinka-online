@@ -32,32 +32,50 @@
   <font face="arial" size="2">Ещё нет аккаунта? <a href="/register.html">Зарегистрироваться</a></font>
 
   <script>
-    var SUPABASE_URL = 'https://qcdvfeyolqwgmknrjakr.supabase.co';
+    var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
     document.getElementById('login-btn').onclick = function() {
       var user = document.getElementById('login-username').value.trim();
       var pass = document.getElementById('login-password').value.trim();
 
+      if (user === '' || pass === '') {
+        alert('Заполните все поля!');
+        return;
+      }
+
+      // Запрос к Supabase для проверки пары логин/пароль
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user) + '&password=eq.' + encodeURIComponent(pass), {
         method: 'GET',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        headers: { 
+          'apikey': SUPABASE_KEY, 
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json'
+        }
       })
-      .then(function(res) { return res.json(); })
+      .then(function(res) { 
+        if (!res.ok) throw new Error('Ошибка сети');
+        return res.json(); 
+      })
       .then(function(foundUsers) {
         if (!foundUsers || foundUsers.length === 0) {
           alert('Неверный логин или пароль!');
           return;
         }
 
-        // Сохраняем сессию (имя и честный ID из базы данных)
-        localStorage.setItem('koto_current_user', foundUsers[0].username);
-        localStorage.setItem('koto_current_uid', foundUsers[0].id);
+        // Берем данные первого найденного пользователя
+        var loggedInUser = foundUsers[0];
 
-        alert('Успешный вход!');
-        window.location.href = '/index.html';
+        // Записываем сессию в localStorage текущего устройства
+        localStorage.setItem('koto_current_user', loggedInUser.username);
+        localStorage.setItem('koto_current_id', loggedInUser.id);
+
+        alert('Привет, ' + loggedInUser.username + '! Вы успешно вошли.');
+        window.location.href = '/profile.html';
       })
-      .catch(function() { alert('Ошибка авторизации!'); });
+      .catch(function(err) {
+        alert('Ошибка авторизации! Проверьте подключение.');
+      });
     };
   </script>
 </body>

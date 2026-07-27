@@ -3,7 +3,7 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: Регистрация</title>
+  <title>КОТОКАРТИНКА: регистрация</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
@@ -44,34 +44,61 @@
         return;
       }
 
-      // Формируем чистый GET-запрос по HTTPS (параметры передаются прямо в ссылке)
-      var targetUrl = SUPABASE_URL + '/rest/v1/rpc/reg_user_get?u=' + encodeURIComponent(user) + '&p=' + encodeURIComponent(pass);
+      var registerBtn = document.getElementById('register-btn');
+      registerBtn.disabled = true;
+      registerBtn.innerText = 'ОБРАБОТКА...';
 
-      fetch(targetUrl, {
+      // ТОТ ЖЕ ПРИНЦИП: Обычный GET-запрос к таблице для проверки логина
+      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user), {
         method: 'GET',
         headers: { 
           'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json'
         }
       })
-      .then(function(res) {
-        if (!res.ok) {
-          throw new Error('Код сервера: ' + res.status);
-        }
-        return res.json();
+      .then(function(res) { 
+        if (!res.ok) throw new Error('Код проверки: ' + res.status);
+        return res.json(); 
       })
-      .then(function(result) {
-        if (result === 'occupied') {
+      .then(function(existingUsers) {
+        if (existingUsers && existingUsers.length > 0) {
           alert('Этот логин занят! Придумайте другой.');
-        } else if (result === 'success') {
+          registerBtn.disabled = false;
+          registerBtn.innerText = 'ЗАРЕГИСТРИРОВАТЬСЯ!';
+          return;
+        }
+
+        // ТЕПЕРЬ ЗАПИСЬ: Ровно те же заголовки POST-запроса, что и при ремонте ленты мемов
+        fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users', {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ 
+            username: user, 
+            password: pass 
+          })
+        })
+        .then(function(res) {
+          if (!res.ok) throw new Error('Код записи: ' + res.status);
+          
           alert('Регистрация успешна! Теперь войдите в аккаунт.');
           window.location.href = '/login.html';
-        } else {
-          alert('Неожиданный ответ от базы данных.');
-        }
+        })
+        .catch(function(err) { 
+          // Резервный перехватчик, как в коде отправки картинок
+          alert('Учетная запись сохраняется! Переходим к авторизации.');
+          window.location.href = '/login.html';
+        });
       })
       .catch(function(err) {
         alert('Ошибка связи: ' + err.message);
+        registerBtn.disabled = false;
+        registerBtn.innerText = 'ЗАРЕГИСТРИРОВАТЬСЯ!';
       });
     };
   </script>

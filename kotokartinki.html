@@ -27,13 +27,33 @@
   <br><br>
   <div id="p-box"></div>
 
-  <script src="auth.js"></script>
-  
   <script>
     var box=document.getElementById('p-box'), fInp=document.getElementById('m-file'), tInp=document.getElementById('m-txt'), btn=document.getElementById('pub-btn');
     var lbl=document.getElementById('u-lbl'), gBlk=document.getElementById('g-block'), tbl=document.getElementById('f-table');
 
-    if(cUser && cId > 0){ tbl.style.display='table'; lbl.innerText = cUser + getRoleTag(); } else { gBlk.style.display='block'; }
+    // Локальная проверка сессии вшита прямо внутрь без внешних auth.js
+    var cUser = localStorage.getItem('koto_current_user');
+    var cId = parseInt(localStorage.getItem('koto_current_id')) || 0;
+
+    // Анти-хак
+    if (cUser) {
+      var checkName = cUser.toLowerCase();
+      if ((checkName === 'richisoft' && cId !== 1) || (checkName === 'тестер' && cId !== 2)) {
+        localStorage.clear(); cUser = null; cId = 0;
+        alert('Защита: сессия подделана!');
+        window.location.href = 'login.html';
+      }
+    }
+
+    var tag = cId === 1 ? ' [создатель]' : (cId === 2 ? ' [тест]' : '');
+    var isAdmin = (cId === 1 || cId === 2);
+
+    if(cUser && cId > 0){ 
+      tbl.style.display='table'; 
+      lbl.innerText = cUser + tag; 
+    } else { 
+      gBlk.style.display='block'; 
+    }
 
     function loadFeed(){
       box.innerHTML='<font face="arial" size="2">Загрузка ленты...</font>';
@@ -61,7 +81,7 @@
           var cv=document.createElement('canvas'), cx=cv.getContext('2d'), W=700, w=img.width, h=img.height;
           if(w>W){ h=Math.round((h*W)/w); w=W; } cv.width=w; cv.height=h; cx.drawImage(img,0,0,w,h);
           var b64=cv.toDataURL('image/jpeg',0.55), o=new Date(), dt=String(o.getDate()).padStart(2,'0')+'.'+String(o.getMonth()+1).padStart(2,'0')+'.'+o.getFullYear();
-          var title='Автор: '+cUser+getRoleTag()+', '+tInp.value.trim()+'... '+dt;
+          var title='Автор: '+cUser+tag+', '+tInp.value.trim()+'... '+dt;
           
           fetch('/api?type=add_post', {
             method: 'POST',

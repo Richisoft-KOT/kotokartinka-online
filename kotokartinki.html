@@ -38,7 +38,7 @@
       <td><input type="text" id="manual-text" size="60" placeholder="Введите все надписи, которые есть на картинке"></td>
     </tr>
     <tr>
-      <td align="right"><font face="arial" size="2">Выбрать файл (.png):</font></td>
+      <td align="right"><font face="arial" size="2">Выбрать файл:</font></td>
       <td><input type="file" id="manual-file" accept="image/*"></td>
     </tr>
     <tr>
@@ -55,7 +55,6 @@
   <!-- Сюда JavaScript автоматически подгружает новые добавленные картинки -->
   <div id="dynamic-posts-container"></div>
 
-  <!-- Статические фото удалены -->
   <div id="static-posts"></div>
 
 <br>
@@ -119,44 +118,71 @@
 
       localStorage.setItem('koto_last_nickname', nickname);
 
-      // ИСПРАВЛЕНО: Теперь строго берется первый файл из списка
       var file = fileInput.files[0];
       var reader = new FileReader();
 
       reader.onload = function(event) {
-        var dateObj = new Date();
-        var day = String(dateObj.getDate()).padStart(2, '0');
-        var month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        var year = dateObj.getFullYear();
-        var formattedDate = day + '.' + month + '.' + year;
+        var img = new Image();
+        img.onload = function() {
+          // Настройка сжатия на Canvas
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
 
-        var templateTitle = 'Автор: ' + nickname + ', ' + userText + '... ' + formattedDate;
+          // Целевая ширина сжатого фото (800px вполне достаточно для веба)
+          var MAX_WIDTH = 800;
+          var width = img.width;
+          var height = img.height;
 
-        var newPost = {
-          image: event.target.result,
-          title: templateTitle
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Рисуем картинку на холсте с новыми размерами
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Конвертируем в JPEG с качеством 70% (0.7) для максимального сжатия массы файла
+          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          var dateObj = new Date();
+          var day = String(dateObj.getDate()).padStart(2, '0');
+          var month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          var year = dateObj.getFullYear();
+          var formattedDate = day + '.' + month + '.' + year;
+
+          var templateTitle = 'Автор: ' + nickname + ', ' + userText + '... ' + formattedDate;
+
+          var newPost = {
+            image: compressedBase64,
+            title: templateTitle
+          };
+
+          var currentPosts = [];
+          try {
+            currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
+          } catch(e) {
+            currentPosts = [];
+          }
+          
+          currentPosts.unshift(newPost);
+          
+          try {
+            localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
+          } catch(e) {
+            alert('Даже после сжатия хранилище переполнено. Попробуйте очистить историю браузера или загрузить другое фото.');
+            return;
+          }
+
+          textInput.value = '';
+          fileInput.value = '';
+          
+          renderDynamicFeed();
         };
-
-        var currentPosts = [];
-        try {
-          currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
-        } catch(e) {
-          currentPosts = [];
-        }
         
-        currentPosts.unshift(newPost);
-        
-        try {
-          localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
-        } catch(e) {
-          alert('Локальное хранилище переполнено! Пожалуйста, используйте картинку меньшего размера или сожмите её.');
-          return;
-        }
-
-        textInput.value = '';
-        fileInput.value = '';
-        
-        renderDynamicFeed();
+        img.src = event.target.result;
       };
 
       reader.readAsDataURL(file);

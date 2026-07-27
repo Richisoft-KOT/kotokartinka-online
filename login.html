@@ -17,19 +17,24 @@
 
   <script>
     document.getElementById('btn').onclick = function(e) {
-      if(e) e.preventDefault();
+      if (e) e.preventDefault();
       var user = document.getElementById('u').value.trim(), pass = document.getElementById('p').value.trim();
-      if(user === '' || pass === '') { alert('Заполните поля!'); return; }
+      if (user === '' || pass === '') { alert('Заполните поля!'); return; }
 
-      var users = JSON.parse(localStorage.getItem('koto_users_db') || '[]');
-      var found = users.find(function(x){ return x.u.toLowerCase() === user.toLowerCase() && x.p === pass; });
-
-      if(!found) { alert('Неверный логин или пароль!'); return; }
-
-      localStorage.setItem('koto_current_user', found.u);
-      localStorage.setItem('koto_current_id', found.id);
-      alert('Привет, ' + found.u + '! Вы вошли.'); window.location.href = '/profile.html';
+      fetch('/api?type=login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: user, pass: pass })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(resData) {
+        if (resData.status === 'invalid') { alert('Неверный логин или пароль!'); return; }
+        localStorage.setItem('koto_current_user', resData.username);
+        localStorage.setItem('koto_current_id', resData.id);
+        alert('Вы вошли!'); window.location.href = 'profile.html';
+      }).catch(function() { alert('Ошибка сервера!'); });
     };
+
   </script>
 </body>
 </html>

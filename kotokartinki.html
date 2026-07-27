@@ -24,7 +24,7 @@
 
 <a href="/index.html">На главную</a> | <a href="/editor.html">Создать котокартинку</a><br><br>
 
-  <!-- Форма загрузки в олдскульном стиле таблиц -->
+  <!-- Форма загрузки -->
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
     <tr>
       <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td>
@@ -52,7 +52,7 @@
 
   <br><br>
 
-  <!-- Сюда подгружаются глобальные посты из Supabase -->
+  <!-- Лента постов из Supabase -->
   <div id="dynamic-posts-container"></div>
 
   <div id="static-posts"></div>
@@ -67,19 +67,17 @@
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
 
-    // Настройки твоей базы Supabase
+    // Твой точный URL и ключ
     var SUPABASE_URL = 'https://supabase.co';
-    var SUPABASE_KEY = 'ВСТАВЬ_СЮДА_СВОЙ_ANON_PUBLIC_КЛЮЧ'; 
+    var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
 
     if (localStorage.getItem('koto_last_nickname')) {
       authorInput.value = localStorage.getItem('koto_last_nickname');
     }
 
-    // Загрузка постов из глобального облака
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      // ИСПРАВЛЕНО: имя таблицы изменено на kotokartinka_posts
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
         method: 'GET',
         headers: {
@@ -101,7 +99,7 @@
 
           var titleNode = document.createElement('div');
           var boldNode = document.createElement('b');
-          boldNode.textContent = post.text; // Твоя колонка text
+          boldNode.textContent = post.text; 
           titleNode.appendChild(boldNode);
           
           var imgNode = document.createElement('img');
@@ -123,11 +121,10 @@
         });
       })
       .catch(function(err) {
-        container.innerHTML = '<font color="red">Ошибка загрузки ленты. Проверь API ключ.</font>';
+        container.innerHTML = '<font color="red">Ошибка загрузки ленты. Проверь настройки таблицы.</font>';
       });
     }
 
-    // Публикация в глобальное облако
     publishBtn.onclick = function() {
       if (!fileInput.files || fileInput.files.length === 0) {
         alert('Сначала выберите файл картинки!');
@@ -168,8 +165,8 @@
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Сжимаем до 65% качества, чтобы точно пролезало в базу в виде текста
-          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
+          // Сжатие до 60% для беспрепятственной отправки текстовых строк в Supabase
+          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.60);
 
           var dateObj = new Date();
           var day = String(dateObj.getDate()).padStart(2, '0');
@@ -179,7 +176,6 @@
 
           var templateTitle = 'Автор: ' + nickname + ', ' + userText + '... ' + formattedDate;
 
-          // ИСПРАВЛЕНО: имя таблицы изменено на kotokartinka_posts
           fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
             method: 'POST',
             headers: {
@@ -189,11 +185,14 @@
               'Prefer': 'return=minimal'
             },
             body: JSON.stringify({
-              text: templateTitle, // Твое имя колонки text
+              text: templateTitle, 
               image: compressedBase64
             })
           })
-          .then(function() {
+          .then(function(res) {
+            if (!res.ok) {
+              throw new Error('Код сервера: ' + res.status);
+            }
             alert('Успешно опубликовано на весь мир!');
             textInput.value = '';
             fileInput.value = '';
@@ -202,7 +201,7 @@
             renderDynamicFeed();
           })
           .catch(function(err) {
-            alert('Ошибка отправки!');
+            alert('Ошибка отправки: ' + err.message);
             publishBtn.disabled = false;
             publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
           });

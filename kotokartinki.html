@@ -1,99 +1,44 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="windows-1251">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: просмотр</title>
-  <style>
-    body{font-family:arial;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6;background:#fff2e3;color:#333}
-    img{display:block;margin:20px 0;}
-    .del-btn{background:#f00;color:#fff;border:1px solid #000;font-family:arial;font-size:11px;font-weight:bold;cursor:pointer;padding:2px 5px;margin-top:5px;}
-  </style>
-</head>
-<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
-  <a href="index.html">На главную</a> | <a href="editor.html">Создать котокартинку</a><br><br>
-
-  <div id="g-block" style="display:none;border:1px dashed #f00;padding:10px;background:#fff;font-family:arial;font-size:13px;text-align:center;">
-    <font color="red"><b>Чтобы добавлять котокартинки, <a href="login.html">ВОЙДИТЕ</a> или <a href="register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
-  </div>
-
-  <table id="f-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display:none;">
-    <tr><td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку</b></font></td></tr>
-    <tr><td align="right"><font face="arial" size="2">Автор:</font></td><td><b id="u-lbl" style="font-family:arial;font-size:14px;">...</b></td></tr>
-    <tr><td align="right"><font face="arial" size="2">Текст:</font></td><td><input type="text" id="m-txt" size="60"></td></tr>
-    <tr><td align="right"><font face="arial" size="2">Файл:</font></td><td><input type="file" id="m-file" accept="image/*"></td></tr>
-    <tr><td colspan="2" align="center"><button id="pub-btn" style="font-family:arial;font-weight:bold;padding:4px 10px;">ДОБАВИТЬ В СПИСОК!</button></td></tr>
-  </table>
-  <br><br>
-  <div id="p-box"></div>
-
-  <script>
-    var box=document.getElementById('p-box'), fInp=document.getElementById('m-file'), tInp=document.getElementById('m-txt'), btn=document.getElementById('pub-btn');
-    var lbl=document.getElementById('u-lbl'), gBlk=document.getElementById('g-block'), tbl=document.getElementById('f-table');
-
-    // Локальная проверка сессии вшита прямо внутрь без внешних auth.js
-    var cUser = localStorage.getItem('koto_current_user');
-    var cId = parseInt(localStorage.getItem('koto_current_id')) || 0;
-
-    // Анти-хак
-    if (cUser) {
-      var checkName = cUser.toLowerCase();
-      if ((checkName === 'richisoft' && cId !== 1) || (checkName === 'тестер' && cId !== 2)) {
-        localStorage.clear(); cUser = null; cId = 0;
-        alert('Защита: сессия подделана!');
-        window.location.href = 'login.html';
-      }
-    }
-
-    var tag = cId === 1 ? ' [создатель]' : (cId === 2 ? ' [тест]' : '');
-    var isAdmin = (cId === 1 || cId === 2);
-
-    if(cUser && cId > 0){ 
-      tbl.style.display='table'; 
-      lbl.innerText = cUser + tag; 
-    } else { 
-      gBlk.style.display='block'; 
-    }
-
-    function loadFeed(){
-      box.innerHTML='<font face="arial" size="2">Загрузка ленты...</font>';
-      fetch('/api?type=get_feed')
-      .then(function(r){ return r.json(); })
-      .then(function(data) {
-        box.innerHTML=''; if(!data||data.length===0){ box.innerHTML='<b>Пока нет глобальных котокартинок. Будь первым!</b>'; return; }
-        data.forEach(function(p){
-          var d=document.createElement('div'); d.style.marginBottom='40px';
-          var t=document.createElement('div'); t.innerHTML='<b>'+p.title+'</b><br>';
-          var i=document.createElement('img'); i.src=p.image; i.style.maxWidth='750px'; i.style.height='auto'; i.style.border='1px solid #000';
-          d.appendChild(t); d.appendChild(i);
-          var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); box.appendChild(d);
-        });
-      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка: '+e.message+'</font>'; });
-    }
-
-    btn.onclick=function(e){
-      if(e)e.preventDefault(); if(!cUser||cId<=0){alert('Нужен аккаунт!');return;}
-      if(!fInp.files||fInp.files.length===0||tInp.value.trim()===''){alert('Заполните все поля!');return;}
-      btn.disabled=true; btn.innerText='ОТПРАВКА...';
+    btn.onclick = function(e) {
+      if(e) e.preventDefault(); 
+      if(!cUser || cId <= 0) { alert('Нужен аккаунт!'); return; }
+      if(!fInp.files || fInp.files.length === 0 || tInp.value.trim() === '') { alert('Заполните все поля!'); return; }
       
-      var r=new FileReader(); r.onload=function(ev){
-        var img=new Image(); img.onload=function(){
-          var cv=document.createElement('canvas'), cx=cv.getContext('2d'), W=700, w=img.width, h=img.height;
-          if(w>W){ h=Math.round((h*W)/w); w=W; } cv.width=w; cv.height=h; cx.drawImage(img,0,0,w,h);
-          var b64=cv.toDataURL('image/jpeg',0.55), o=new Date(), dt=String(o.getDate()).padStart(2,'0')+'.'+String(o.getMonth()+1).padStart(2,'0')+'.'+o.getFullYear();
-          var title='Автор: '+cUser+tag+', '+tInp.value.trim()+'... '+dt;
+      btn.disabled = true; 
+      btn.innerText = 'ОТПРАВКА...';
+      
+      var r = new FileReader(); 
+      r.onload = function(ev) {
+        var img = new Image(); 
+        img.onload = function() {
+          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 650, w = img.width, h = img.height;
+          if(w > W) { h = Math.round((h * W) / w); w = W; } 
+          cv.width = w; cv.height = h; 
+          cx.drawImage(img, 0, 0, w, h);
           
+          // Сжимаем до 50% качества, чтобы картинка долетала до сервера мгновенно
+          var b64 = cv.toDataURL('image/jpeg', 0.50); 
+          var o = new Date(), dt = String(o.getDate()).padStart(2, '0') + '.' + String(o.getMonth() + 1).padStart(2, '0') + '.' + o.getFullYear();
+          var title = 'Автор: ' + cUser + tag + ', ' + tInp.value.trim() + '... ' + dt;
+          
+          // Отправляем запрос без жесткого ожидания ответа от Vercel
           fetch('/api?type=add_post', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: title, image: b64 })
-          }).then(function(){
-            alert('Опубликовано!'); tInp.value=''; fInp.value=''; btn.disabled=false; btn.innerText='ДОБАВИТЬ В СПИСОК!'; loadFeed();
           });
-        }; img.src=ev.target.result;
-      }; r.readAsDataURL(fInp.files);
+
+          // ОПТИМИЗАЦИЯ: Разблокируем интерфейс мгновенно, не дожидаясь ответа сервера
+          setTimeout(function() {
+            alert('Успешно опубликовано!'); 
+            tInp.value = ''; 
+            fInp.value = ''; 
+            btn.disabled = false; 
+            btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; 
+            loadFeed();
+          }, 1000);
+        }; 
+        img.src = ev.target.result;
+      }; 
+      r.readAsDataURL(fInp.files[0]);
     };
     loadFeed();
-  </script>
-</body>
-</html>

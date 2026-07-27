@@ -20,38 +20,6 @@
 </head>
 <body>
 <img width="256" height="214" alt="КОТОКАРТИНКА-КОТ" src="https://github.com/user-attachments/assets/cc3496cf-d73a-427f-a735-c512f938c0d0" />
-<!-- Вставьте этот блок в нужное место вашего index.html (например, в самый верх тела страницы) -->
-<table border="0" cellpadding="5" cellspacing="0" bgcolor="#ffffff" style="border: 1px solid #000; font-family: arial; font-size: 13px;">
-  <tr>
-    <td id="user-status-block">
-      <!-- Сюда JavaScript автоматически подставит нужный текст и кнопки -->
-    </td>
-  </tr>
-</table>
-
-<script>
-  (function() {
-    var statusTd = document.getElementById('user-status-block');
-    var currentUser = localStorage.getItem('koto_current_user');
-
-    if (currentUser) {
-      // Если пользователь вошел в аккаунт
-     statusTd.innerHTML = 'ты вошел как: <b>' + currentUser + '</b> | <a href="/editor.html">создать котоматрицу</a> | <a href="/profile.html">личный кабинет</a> | <a href="#" id="logout-link">выйти</a>';
-
-      
-      document.getElementById('logout-link').onclick = function(e) {
-        e.preventDefault();
-        localStorage.removeItem('koto_current_user'); // Стираем сессию
-        alert('ты вышел из аккаунта, ждем тебя снова!');
-        window.location.reload(); // Перезагружаем страницу для обновления статуса
-      };
-    } else {
-      // Если пользователь не авторизован
-      statusTd.innerHTML = 'ты не вошел <b>.</b> | <a href="/login.html"><b>вход</b></a> | <a href="/register.html"><b>регистрация</b></a>';
-    }
-  })();
-</script>
-
 КОТОКАРТИНКА - аналог котоматрицы, но живой. на днях я зарегестрировался в котоматрице, но заметил нулевой онлайн, котоматрица умерла... я создал эту группу, которая должна повторить котоматрицу, я сделал почти те же темы и похожие правила, с уважением, Мем Ричардс. этот текст висить в телеграме котокартинки. пока что этот сайт просто оповещает о том что котокартинка существует.
 проект не готов до конца, и он все еще развивается<img width="36" height="23" alt="beta" src="https://github.com/user-attachments/assets/c3119da2-516f-4a41-946f-0ba4b3e9f56e" /><br>
 НЕ МЕДЛИ! ЗАХОДИ В ТЕЛЕГРАМ КОТОКАРТИНКИ!<br>

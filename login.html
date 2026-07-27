@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="windows-1251">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КОТОКАРТИНКА: Вход</title>
+</head>
+<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
+  <a href="/index.html">На главную</a><br><br>
+
+  <font face="arial" size="5"><b>ВХОД НА САЙТ</b></font><br><br>
+
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
+    <tr>
+      <td align="right"><font face="arial" size="2">Логин:</font></td>
+      <td><input type="text" id="login-username" size="30"></td>
+    </tr>
+    <tr>
+      <td align="right"><font face="arial" size="2">Пароль:</font></td>
+      <td><input type="password" id="login-password" size="30"></td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <button id="login-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
+          ВОЙТИ!
+        </button>
+      </td>
+    </tr>
+  </table>
+
+  <br>
+  <font face="arial" size="2">Ещё нет аккаунта? <a href="/register.html">Зарегистрироваться</a></font>
+
+  <script>
+    var SUPABASE_URL = 'https://qcdvfeyolqwgmknrjakr.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
+
+    document.getElementById('login-btn').onclick = function() {
+      var user = document.getElementById('login-username').value.trim();
+      var pass = document.getElementById('login-password').value.trim();
+
+      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user) + '&password=eq.' + encodeURIComponent(pass), {
+        method: 'GET',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(foundUsers) {
+        if (!foundUsers || foundUsers.length === 0) {
+          alert('Неверный логин или пароль!');
+          return;
+        }
+
+        // Сохраняем сессию (имя и честный ID из базы данных)
+        localStorage.setItem('koto_current_user', foundUsers[0].username);
+        localStorage.setItem('koto_current_uid', foundUsers[0].id);
+
+        alert('Успешный вход!');
+        window.location.href = '/index.html';
+      })
+      .catch(function() { alert('Ошибка авторизации!'); });
+    };
+  </script>
+</body>
+</html>

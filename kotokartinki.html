@@ -49,7 +49,7 @@
     }
 
     var tag = cId === 1 ? ' [создатель]' : (cId === 2 ? ' [тест]' : '');
-    var isAdmin = (cId === 1 || cId === 2);
+    var isGlobalAdmin = (cId === 1 || cId === 2);
 
     if(cUser && cId > 0){ 
       tbl.style.display='table'; 
@@ -69,9 +69,44 @@
           var t=document.createElement('div'); t.innerHTML='<b>'+p.title+'</b><br>';
           var i=document.createElement('img'); i.src=p.image; i.style.maxWidth='750px'; i.style.height='auto'; i.style.border='1px solid #000';
           d.appendChild(t); d.appendChild(i);
+
+          // ИСПРАВЛЕНО: Рендерим админ-кнопку удаления под постом, если залогинен ID 1 или ID 2
+          if (isGlobalAdmin) {
+            var delBtn = document.createElement('button');
+            delBtn.className = 'del-btn';
+            delBtn.textContent = '[Удалить эту котокартинку]';
+            delBtn.onclick = function() {
+              if (confirm('Удалить этот мем из общей ленты насовсем?')) {
+                deletePost(p.id);
+              }
+            };
+            d.appendChild(delBtn);
+          }
+
           var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); box.appendChild(d);
         });
       }).catch(function(e){ box.innerHTML='<font color="red">Ошибка: '+e.message+'</font>'; });
+    }
+
+    // ИСПРАВЛЕНО: Добавлена функция отправки запроса удаления на сервер api/index.js
+    function deletePost(postId) {
+      fetch('/api?type=delete_post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: postId, adminId: cId })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(resData) {
+        if (resData.status === 'success') {
+          alert('Успешно удалено!');
+          loadFeed();
+        } else {
+          alert('Ошибка удаления: доступ запрещен!');
+        }
+      })
+      .catch(function() {
+        alert('Ошибка связи с сервером при удалении!');
+      });
     }
 
     btn.onclick = function(e) {
@@ -112,7 +147,7 @@
         }; 
         img.src = ev.target.result;
       }; 
-      r.readAsDataURL(fInp.files[0]);
+      r.readAsDataURL(fInp.files);
     };
     loadFeed();
   </script>

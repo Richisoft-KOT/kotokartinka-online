@@ -32,7 +32,6 @@
   <font face="arial" size="2">Уже есть аккаунт? <a href="/login.html">Войти здесь</a></font>
 
   <script>
-    // ТВОЙ ТОЧНЫЙ АДРЕС И КЛЮЧ УЖЕ ЗДЕСЬ:
     var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
@@ -45,38 +44,51 @@
         return;
       }
 
-      // Проверяем, свободен ли логин в Supabase
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=ilike.' + encodeURIComponent(user), {
+      // Безопасная проверка занятости логина через оператор точного совпадения eq.
+      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user), {
         method: 'GET',
         headers: { 
           'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY 
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json'
         }
       })
-      .then(function(res) { return res.json(); })
+      .then(function(res) { 
+        if (!res.ok) {
+          throw new Error('Ошибка проверки имени. Код: ' + res.status);
+        }
+        return res.json(); 
+      })
       .then(function(existingUsers) {
         if (existingUsers && existingUsers.length > 0) {
           alert('Этот логин занят! Придумайте другой.');
           return;
         }
 
-        // Регистрируем нового пользователя
+        // Запись нового аккаунта в Supabase
         fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users', {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
           },
           body: JSON.stringify({ username: user, password: pass })
         })
-        .then(function() {
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Ошибка записи в базу. Код: ' + response.status);
+          }
           alert('Регистрация успешна! Теперь войдите в аккаунт.');
           window.location.href = '/login.html';
         })
-        .catch(function() { 
-          alert('Ошибка при сохранении пользователя!'); 
+        .catch(function(err) { 
+          alert('Не удалось сохранить пользователя: ' + err.message); 
         });
+      })
+      .catch(function(err) {
+        alert('Критическая ошибка связи с сервером: ' + err.message);
       });
     };
   </script>

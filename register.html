@@ -25,25 +25,22 @@
       kRow.style.display = (v === 'richisoft' || v === 'тестер') ? 'table-row' : 'none';
     };
 
-    btn.onclick = function(e) {
-      if(e) e.preventDefault();
+       btn.onclick = function(e) {
+      if (e) e.preventDefault();
       var user = uInp.value.trim(), pass = pInp.value.trim(), key = kInp.value.trim().toLowerCase();
-      if(user === '' || pass === '') { alert('Заполните поля!'); return; }
+      if (user === '' || pass === '') { alert('Заполните поля!'); return; }
 
-      // ЖЕСТКАЯ ЗАЩИТА: проверка секретного мастер-кода на клиенте
-      if(user.toLowerCase() === 'richisoft' && key !== 'richi2020') { alert('Неверный мастер-ключ!'); return; }
-      if(user.toLowerCase() === 'тестер' && key !== 'test2026') { alert('Неверный мастер-ключ!'); return; }
-
-      var users = JSON.parse(localStorage.getItem('koto_users_db') || '[]');
-      if(users.some(function(x){ return x.u.toLowerCase() === user.toLowerCase(); })) { alert('Логин занят!'); return; }
-
-      var newId = users.length + 3; // Обычные юзеры получают ID начиная с 3
-      if(user.toLowerCase() === 'richisoft') newId = 1;
-      if(user.toLowerCase() === 'тестер') newId = 2;
-
-      users.push({ id: newId, u: user, p: pass });
-      localStorage.setItem('koto_users_db', JSON.stringify(users));
-      alert('Регистрация успешна!'); window.location.href = '/login.html';
+      fetch('/api?type=register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: user, pass: pass, key: key })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(resData) {
+        if (resData.status === 'wrong_key') alert('Неверный мастер-ключ!');
+        else if (resData.status === 'occupied') alert('Логин занят!');
+        else { alert('Регистрация успешна!'); window.location.href = 'login.html'; }
+      }).catch(function() { alert('Ошибка сервера!'); });
     };
   </script>
 </body>

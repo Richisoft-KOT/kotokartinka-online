@@ -55,21 +55,21 @@
   <!-- Сюда JavaScript будет автоматически подгружать новые добавленные картинки -->
   <div id="dynamic-posts-container"></div>
 
-  <!-- Статический список картинок с прямыми адресами файлов -->
+  <!-- Статический список картинок с рабочими внешними ссылками-заглушками -->
   <div id="static-posts">
     я кот-фотограф! скажите "мяу" и улыбнитесь. 25.07.2026
-    <img width="472" height="295" alt="photo_2026-07-24_21-26-04" src="https://githubusercontent.com" onerror="this.src='https://github.com'" /><br>
+    <img width="472" height="295" alt="photo_2026-07-24_21-26-04" src="https://placehold.co" /><br>
 
     хозяин, ты издеваешься? я то думал там колбаса, котлеты! а тут красные мячики для бильярда! зеленка какая-то и хлеб с углем. 25.07.2026
-    <img width="468" height="352" alt="photo_2026-07-22_13-17-14" src="https://githubusercontent.com" onerror="this.src='https://github.com'" /><br>
+    <img width="468" height="352" alt="photo_2026-07-22_13-17-14" src="https://placehold.co" /><br>
 
     Хозяин, а может, плитка уже приклеилась? 25.07.2026
-    <img width="300" height="361" alt="kotomatritsa_aE" src="https://githubusercontent.com" onerror="this.src='https://github.com'" /><br>
+    <img width="300" height="361" alt="kotomatritsa_aE" src="https://placehold.co" /><br>
   </div>
 
 <br>
-<img width="64" height="64" alt="photo_2024-03-27_19-52-51 (2)" src="https://github.com" />
-СДЕЛАННО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год
+<img width="64" height="64" alt="photo_2024-03-27_19-52-51 (2)" src="https://placehold.co" />
+СДЕЛАНО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год
 
   <script>
     var container = document.getElementById('dynamic-posts-container');
@@ -84,14 +84,21 @@
 
     function renderDynamicFeed() {
       container.innerHTML = '';
-      var posts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
+      var posts = [];
+      try {
+        posts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
+      } catch(e) {
+        posts = [];
+      }
 
       posts.forEach(function(post) {
         var postDiv = document.createElement('div');
         postDiv.style.marginBottom = '20px';
 
         var titleNode = document.createElement('div');
-        titleNode.innerHTML = '<b>' + post.title + '</b>';
+        var boldNode = document.createElement('b');
+        boldNode.textContent = post.title; 
+        titleNode.appendChild(boldNode);
         
         var imgNode = document.createElement('img');
         imgNode.src = post.image;
@@ -122,7 +129,6 @@
 
       localStorage.setItem('koto_last_nickname', nickname);
 
-      // Читаем строго первый файл из выбранных
       var file = fileInput.files[0];
       var reader = new FileReader();
 
@@ -140,9 +146,21 @@
           title: templateTitle
         };
 
-        var currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
+        var currentPosts = [];
+        try {
+          currentPosts = JSON.parse(localStorage.getItem('kotomatrix_posts') || '[]');
+        } catch(e) {
+          currentPosts = [];
+        }
+        
         currentPosts.unshift(newPost);
-        localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
+        
+        try {
+          localStorage.setItem('kotomatrix_posts', JSON.stringify(currentPosts));
+        } catch(e) {
+          alert('Локальное хранилище переполнено! Пожалуйста, используйте картинку меньшего размера.');
+          return;
+        }
 
         textInput.value = '';
         fileInput.value = '';

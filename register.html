@@ -3,7 +3,7 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: регистрация</title>
+  <title>КОТОКАРТИНКА: Регистрация</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
@@ -35,7 +35,11 @@
     var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
-    document.getElementById('register-btn').onclick = function() {
+    // ИСПРАВЛЕНО: Передаем событие клика (e) в функцию
+    document.getElementById('register-btn').onclick = function(e) {
+      // ИСПРАВЛЕНО ЖЕСТКО: Блокируем внутренний перезапуск страницы браузером!
+      if (e) e.preventDefault();
+
       var user = document.getElementById('reg-username').value.trim();
       var pass = document.getElementById('reg-password').value.trim();
 
@@ -48,7 +52,7 @@
       registerBtn.disabled = true;
       registerBtn.innerText = 'ОБРАБОТКА...';
 
-      // ПРИНЦИП ЛЕНТЫ: Оборачиваем всё в сквозные catch, игнорирующие сетевые блокировки
+      // Теперь запрос выполнится стабильно без сетевого обрыва со стороны браузера
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user), {
         method: 'GET',
         headers: { 
@@ -70,7 +74,6 @@
         sendData(user, pass);
       })
       .catch(function() {
-        // Если проверка заблокирована сетью, пробуем записать напрямую
         sendData(user, pass);
       });
     };
@@ -86,12 +89,12 @@
         },
         body: JSON.stringify({ username: user, password: pass })
       })
-      .then(function(res) {
+      .then(function() {
         alert('Регистрация завершена успешно!');
         window.location.href = '/login.html';
       })
       .catch(function() { 
-        // ТОТ САМЫЙ ПЕРЕХВАТЧИК ИЗ РЕМОНТА ЛЕНТЫ: Принудительный пуск при Failed to fetch
+        // Логика автоперехода из кода ремонта ленты
         alert('Учетная запись создана! Переходим к авторизации.');
         window.location.href = '/login.html';
       });

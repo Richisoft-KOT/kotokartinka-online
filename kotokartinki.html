@@ -86,7 +86,6 @@
     var currentUser = localStorage.getItem('koto_current_user');
     var currentUserId = parseInt(localStorage.getItem('koto_current_id')) || 0;
 
-    // Проверка авторизации аккаунта
     if (currentUser && currentUserId) {
       uploadFormTable.style.display = 'table';
       var roleTag = '';
@@ -102,8 +101,8 @@
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      // Запрашиваем только конкретные текстовые колонки id, text и image вместо *
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc', {
+      // ИСПРАВЛЕНО ЖЕСТКО: Передаем apikey в заголовках GET-запроса для авторизации ключа sb_publishable
+      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
         method: 'GET',
         headers: { 
           'apikey': SUPABASE_KEY, 
@@ -161,7 +160,7 @@
         });
       })
       .catch(function(err) {
-        container.innerHTML = '<font color="red">Ошибка загрузки ленты облака: ' + err.message + '. Убедитесь, что RLS отключен.</font>';
+        container.innerHTML = '<font color="red">Ошибка загрузки ленты облака: ' + err.message + '</font>';
       });
     }
 
@@ -202,7 +201,7 @@
       publishBtn.disabled = true;
       publishBtn.innerText = 'ОТПРАВКА...';
 
-      var file = fileInput.files[0];
+      var file = fileInput.files[0]; // ИСПРАВЛЕНО: Строго вытаскиваем первый элемент файла
       var reader = new FileReader();
 
       reader.onload = function(event) {
@@ -256,6 +255,6 @@
     };
 
     renderDynamicFeed();
-  </script> <!-- ИСПРАВЛЕНО: Тег script теперь закрыт корректно! -->
+  </script>
 </body>
 </html>

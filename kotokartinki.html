@@ -26,7 +26,6 @@
   </table>
   <br><br>
   <div id="p-box"></div>
-  <div id="static-posts"></div>
 
   <script>
     var box=document.getElementById('p-box'), fInp=document.getElementById('m-file'), tInp=document.getElementById('m-txt'), btn=document.getElementById('pub-btn');
@@ -43,7 +42,8 @@
 
     function loadFeed(){
       box.innerHTML='<font face="arial" size="2">Загрузка...</font>';
-      fetch(URL+'/rest/v1/kotokartinka_posts?select=*&order=id.desc',{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json; charset=utf-8'}})
+      // Вызываем стабильную RPC-функцию получения ленты
+      fetch(URL+'/rest/v1/rpc/get_koto_feed',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json; charset=utf-8'}})
       .then(function(r){return r.json();}).then(function(data){
         box.innerHTML=''; if(!data||data.length===0){ box.innerHTML='<b>Пока пусто!</b>'; return; }
         data.forEach(function(p){
@@ -76,10 +76,12 @@
           if(w>W){ h=Math.round((h*W)/w); w=W; } cv.width=w; cv.height=h; cx.drawImage(img,0,0,w,h);
           var b64=cv.toDataURL('image/jpeg',0.55), o=new Date(), dt=String(o.getDate()).padStart(2,'0')+'.'+String(o.getMonth()+1).padStart(2,'0')+'.'+o.getFullYear();
           var title='Автор: '+cUser+tag+', '+tInp.value.trim()+'... '+dt;
-          fetch(URL+'/rest/v1/kotokartinka_posts',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json; charset=utf-8','Prefer':'return=minimal'},body:JSON.stringify({text:title,image:b64})})
+          
+          // Вызываем RPC-функцию добавления мема в базу
+          fetch(URL+'/rest/v1/rpc/add_koto_feed',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({t:title,img:b64})})
           .then(function(){alert('Опубликовано!'); tInp.value=''; fInp.value=''; btn.disabled=false; btn.innerText='ДОБАВИТЬ В СПИСОК!'; loadFeed();});
         }; img.src=ev.target.result;
-      }; r.readAsDataURL(fInp.files[0]);
+      }; r.readAsDataURL(fInp.files);
     };
     loadFeed();
   </script>

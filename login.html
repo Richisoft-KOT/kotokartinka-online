@@ -3,94 +3,32 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТОКАРТИНКА: вход</title>
+  <title>КОТОКАРТИНКА: Вход</title>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="/index.html">На главную</a><br><br>
-
   <font face="arial" size="5"><b>ВХОД НА САЙТ</b></font><br><br>
-
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
-    <tr>
-      <td align="right"><font face="arial" size="2">Логин:</font></td>
-      <td><input type="text" id="login-username" size="30"></td>
-    </tr>
-    <tr>
-      <td align="right"><font face="arial" size="2">Пароль:</font></td>
-      <td><input type="password" id="login-password" size="30"></td>
-    </tr>
-    <tr>
-      <td colspan="2" align="center">
-        <button id="login-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
-          ВОЙТИ!
-        </button>
-      </td>
-    </tr>
+    <tr><td>Логин:</td><td><input type="text" id="u" size="30"></td></tr>
+    <tr><td>Пароль:</td><td><input type="password" id="p" size="30"></td></tr>
+    <tr><td colspan="2" align="center"><button id="btn">ВОЙТИ!</button></td></tr>
   </table>
-
-  <br>
-  <font face="arial" size="2">Ещё нет аккаунта? <a href="/register.html">Зарегистрироваться</a></font>
+  <br><a href="/register.html">Зарегистрироваться</a>
 
   <script>
-    var SUPABASE_URL = 'https://supabase.co';
-    var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
+    document.getElementById('btn').onclick = function(e) {
+      if(e) e.preventDefault();
+      var user = document.getElementById('u').value.trim(), pass = document.getElementById('p').value.trim();
+      if(user === '' || pass === '') { alert('Заполните поля!'); return; }
 
-    document.getElementById('login-btn').onclick = function(e) {
-      if (e) e.preventDefault(); // Жестко блокируем перезагрузку страницы браузером
+      var users = JSON.parse(localStorage.getItem('koto_users_db') || '[]');
+      var found = users.find(function(x){ return x.u.toLowerCase() === user.toLowerCase() && x.p === pass; });
 
-      var user = document.getElementById('login-username').value.trim();
-      var pass = document.getElementById('login-password').value.trim();
+      if(!found) { alert('Неверный логин или пароль!'); return; }
 
-      if (user === '' || pass === '') {
-        alert('Заполните все поля!');
-        return;
-      }
-
-      var loginBtn = document.getElementById('login-btn');
-      loginBtn.disabled = true;
-      loginBtn.innerText = 'ОБРАБОТКА...';
-
-      // Делаем точный GET запрос к таблице пользователей
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_users?username=eq.' + encodeURIComponent(user) + '&password=eq.' + encodeURIComponent(pass), {
-        method: 'GET',
-        headers: { 
-          'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(function(res) { 
-        if (!res.ok) throw new Error('Сервер ответил ошибкой');
-        return res.json(); 
-      })
-      .then(function(foundUsers) {
-        // Проверяем, вернулся ли нам массив с пользователем
-        if (!foundUsers || foundUsers.length === 0) {
-          alert('Неверный логин или пароль!');
-          loginBtn.disabled = false;
-          loginBtn.innerText = 'ВОЙТИ!';
-          return;
-        }
-
-        // ИСПРАВЛЕНО КРИТИЧЕСКИ: Берем первого юзера из массива [0]
-        var loggedInUser = foundUsers[0]; 
-
-        localStorage.setItem('koto_current_user', loggedInUser.username);
-        localStorage.setItem('koto_current_id', loggedInUser.id);
-
-        alert('Привет, ' + loggedInUser.username + '! Вы успешно вошли.');
-        window.location.href = '/profile.html';
-      })
-      .catch(function(err) {
-        // ТРЮК ИЗ РЕМОНТА ЛЕНТЫ: Если сеть выдала Failed to fetch, пробиваемся силой!
-        var mockId = (user.toLowerCase() === 'richisoft') ? 1 : 3; 
-        
-        localStorage.setItem('koto_current_user', user);
-        localStorage.setItem('koto_current_id', mockId);
-
-        alert('Вход выполнен в обход сетевых фильтров!');
-        window.location.href = '/profile.html';
-      });
+      localStorage.setItem('koto_current_user', found.u);
+      localStorage.setItem('koto_current_id', found.id);
+      alert('Привет, ' + found.u + '! Вы вошли.'); window.location.href = '/profile.html';
     };
   </script>
 </body>

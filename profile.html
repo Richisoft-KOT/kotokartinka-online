@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="windows-1251">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КОТОКАРТИНКА: Личный кабинет</title>
+</head>
+<body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
+
+  <a href="/index.html">На главную</a> | <a href="/editor.html">В редактор</a> | <a href="/kotokartinki.html">В ленту</a><br><br>
+
+  <font face="arial" size="5"><b>ЛИЧНЫЙ КАБИНЕТ КОТОКАРТИНЩИКА</b></font><br><br>
+
+  <!-- Блок информации о пользователе -->
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="font-family: arial; font-size: 14px;">
+    <tr>
+      <td bgcolor="#ff9900"><font color="#ffffff"><b>Твой профиль</b></font></td>
+    </tr>
+    <tr>
+      <td>
+        логин: <b id="profile-username">Гость</b><br>
+        твой уникальный ID: <b id="profile-id">Загрузка...</b>
+      </td>
+    </tr>
+  </table>
+
+  <script>
+    var currentUser = localStorage.getItem('koto_current_user');
+    var currentUserId = parseInt(localStorage.getItem('koto_current_id'));
+
+    // Если токенов в памяти нет — выкидываем на страницу входа
+    if (!currentUser || !currentUserId) {
+      alert('вход не выполнен!');
+      window.location.href = '/login.html';
+    }
+
+    // Выводим имя пользователя
+    document.getElementById('profile-username').innerText = currentUser;
+
+    // Распределяем метки по глобальному ID из Supabase
+    var idBlock = document.getElementById('profile-id');
+    if (currentUserId === 1) {
+      idBlock.innerHTML = '1 <font color="red"><b>[создатель]</b></font>';
+    } else if (currentUserId === 2) {
+      idBlock.innerHTML = '2 <font color="gray"><b>[тест]</b></font>';
+    } else {
+      idBlock.innerText = currentUserId;
+    }
+  </script>
+</body>
+</html>

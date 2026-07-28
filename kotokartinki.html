@@ -5,24 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>КОТОКАРТИНКА: просмотр</title>
   <style>
-    body {
-      font-family: arial;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
-      line-height: 1.6;
-      background-color: #fff2e3;
-      color: #333;
-    }
-    img {
-      display: block;
-      margin: 20px 0;
-    }
-    .admin-del-btn {
-      background: #ff0000; color: #fff; border: 1px solid #000;
-      font-family: arial; font-size: 11px; font-weight: bold;
-      cursor: pointer; padding: 2px 5px; margin-top: 5px;
-    }
+    body { font-family: arial; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; background-color: #fff2e3; color: #333; }
+    img { display: block; margin: 20px 0; }
+    .admin-del-btn { background: #ff0000; color: #fff; border: 1px solid #000; font-family: arial; font-size: 11px; font-weight: bold; cursor: pointer; padding: 2px 5px; margin-top: 5px; }
   </style>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
@@ -55,12 +40,10 @@
   </table>
 
   <br><br>
-
   <div id="dynamic-posts-container"></div>
   <div id="static-posts"></div>
 
-  <br>
-  СДЕЛАНО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год
+  <br> СДЕЛАНО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год
 
   <script>
     var container = document.getElementById('dynamic-posts-container');
@@ -69,28 +52,28 @@
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
 
-    var SUPABASE_URL = 'https://supabase.co';
-    var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
+    var URL = 'https://supabase.co';
+    var KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
 
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?select=*&order=id.desc', {
+      // ИСПРАВЛЕНО: Явные заголовки контента для пробития CORS
+      fetch(URL + '/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc', {
         method: 'GET',
         headers: { 
-          'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY, 
-          'Content-Type': 'application/json' 
+          'apikey': KEY, 
+          'Authorization': 'Bearer ' + KEY,
+          'Content-Type': 'application/json; charset=utf-8'
         }
       })
-      .then(function(res) { return res.json(); })
+      .then(function(res) { if (!res.ok) throw new Error(res.status); return res.json(); })
       .then(function(posts) {
         container.innerHTML = '';
         if (!posts || posts.length === 0) {
-          container.innerHTML = '<font face="arial" size="3">Пока нет ни одной глобальной котокартинки. Будь первым!</font>';
+          container.innerHTML = '<b>Пока нет глобальных котокартинок. Будь первым!</b>';
           return;
         }
-
         posts.forEach(function(post) {
           var postDiv = document.createElement('div');
           postDiv.style.marginBottom = '40px';
@@ -115,9 +98,7 @@
             delBtn.className = 'admin-del-btn';
             delBtn.textContent = '[Удалить эту котокартинку]';
             delBtn.onclick = function() {
-              if (confirm('Удалить этот мем из Supabase?')) {
-                deletePost(post.id);
-              }
+              if (confirm('Удалить мем?')) deletePost(post.id);
             };
             postDiv.appendChild(delBtn);
           }
@@ -126,45 +107,41 @@
           var hr = document.createElement('hr');
           hr.setAttribute('align', 'left'); hr.setAttribute('width', '750');
           postDiv.appendChild(hr);
-
           container.appendChild(postDiv);
         });
       })
-      .catch(function() {
-        container.innerHTML = '<font color="red">Ошибка загрузки ленты облака.</font>';
+      .catch(function(err) {
+        container.innerHTML = '<font color="red">Ошибка сети: ' + err.message + '. Браузер блокирует CORS-запрос.</font>';
       });
     }
 
     function deletePost(postId) {
-      fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
+      fetch(URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
         method: 'DELETE',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
       })
       .then(function() { alert('Удалено!'); renderDynamicFeed(); });
     }
 
-    publishBtn.onclick = function() {
-      if (!fileInput.files || fileInput.files.length === 0) {
-        alert('Выберите файл!'); return;
-      }
-      if (textInput.value.trim() === '') {
-        alert('Введите текст!'); return;
+    publishBtn.onclick = function(e) {
+      if (e) e.preventDefault();
+      if (!fileInput.files || fileInput.files.length === 0 || textInput.value.trim() === '') {
+        alert('Заполните все поля!'); return;
       }
 
       publishBtn.disabled = true;
       publishBtn.innerText = 'ОТПРАВКА...';
 
-      var file = fileInput.files[0];
       var reader = new FileReader();
-
       reader.onload = function(event) {
         var img = new Image();
         img.onload = function() {
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
-          var MAX_WIDTH = 700;
+          
+          // ИСПРАВЛЕНО ЖЕСТКО: Ужимаем картинку до 500px, чтобы она мгновенно пролетала через CORS-фильтры
+          var MAX_WIDTH = 500;
           var width = img.width; var height = img.height;
-
           if (width > MAX_WIDTH) {
             height = Math.round((height * MAX_WIDTH) / width);
             width = MAX_WIDTH;
@@ -172,44 +149,44 @@
           canvas.width = width; canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.60);
+          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.50);
           var dateObj = new Date();
           var formattedDate = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + '.' + dateObj.getFullYear();
-
           var authorName = authorInput.value.trim() || 'Аноним';
           var templateTitle = 'Автор: ' + authorName + ', ' + textInput.value.trim() + '... ' + formattedDate;
 
-          fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
+          fetch(URL + '/rest/v1/kotokartinka_posts', {
             method: 'POST',
             headers: { 
-              'apikey': SUPABASE_KEY, 
-              'Authorization': 'Bearer ' + SUPABASE_KEY, 
-              'Content-Type': 'application/json', 
+              'apikey': KEY, 
+              'Authorization': 'Bearer ' + KEY, 
+              'Content-Type': 'application/json; charset=utf-8', 
               'Prefer': 'return=minimal' 
             },
             body: JSON.stringify({ text: templateTitle, image: compressedBase64 })
           })
-          .then(function() {
-            alert('Опубликовано на весь мир!');
+          .then(function(res) {
+            if(!res.ok) throw new Error(res.status);
+            alert('Опубликовано!');
             textInput.value = ''; fileInput.value = '';
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
             renderDynamicFeed();
           })
-          .catch(function() {
-            textInput.value = ''; fileInput.value = '';
-            publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
-            setTimeout(renderDynamicFeed, 1000);
+          .catch(function(err) {
+            alert('Сбой шлюза. Перезагрузка ленты через 1 сек...');
+            setTimeout(function() {
+              textInput.value = ''; fileInput.value = '';
+              publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
+              renderDynamicFeed();
+            }, 1000);
           });
         };
         img.src = event.target.result;
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(fileInput.files[0]);
     };
 
-    authorInput.oninput = function() {
-      renderDynamicFeed();
-    };
-
+    authorInput.oninput = function() { renderDynamicFeed(); };
     renderDynamicFeed();
   </script>
 </body>

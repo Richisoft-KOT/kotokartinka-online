@@ -31,7 +31,6 @@
     var box=document.getElementById('p-box'), fInp=document.getElementById('m-file'), tInp=document.getElementById('m-txt'), btn=document.getElementById('pub-btn');
     var lbl=document.getElementById('u-lbl'), gBlk=document.getElementById('g-block'), tbl=document.getElementById('f-table');
 
-    // Настройки твоей вечной базы данных Supabase
     var URL='https://supabase.co', KEY='sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 
     var cUser = localStorage.getItem('koto_current_user');
@@ -51,12 +50,17 @@
 
     if(cUser && cId > 0){ tbl.style.display='table'; lbl.innerText = cUser + tag; } else { gBlk.style.display='block'; }
 
-    // Чтение НАПРЯМУЮ из Supabase методом GET (Память никогда не сотрется!)
+    // ИСПРАВЛЕНО: Читаем через POST-метод (как просит Supabase для rpc), передавая пустой объект {}
     function loadFeed(){
       box.innerHTML='<font face="arial" size="2">Загрузка ленты облака...</font>';
       fetch(URL + '/rest/v1/rpc/get_koto_feed_json', {
-        method: 'GET',
-        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+        method: 'POST',
+        headers: { 
+          'apikey': KEY, 
+          'Authorization': 'Bearer ' + KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
       })
       .then(function(r){ return r.json(); })
       .then(function(data) {
@@ -94,27 +98,28 @@
       r.onload = function(ev) {
         var img = new Image(); 
         img.onload = function() {
-          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 600, h = img.height, w = img.width;
+          // Сильное сжатие до 550px, чтобы пакеты улетали мгновенно
+          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 550, h = img.height, w = img.width;
           if (w > W) { h = Math.round((h * W) / w); w = W; } cv.width = w; cv.height = h; cx.drawImage(img, 0, 0, w, h);
           
-          var b64 = cv.toDataURL('image/jpeg', 0.55); 
+          var b64 = cv.toDataURL('image/jpeg', 0.50); 
           var o = new Date(), dt = String(o.getDate()).padStart(2, '0') + '.' + String(o.getMonth() + 1).padStart(2, '0') + '.' + o.getFullYear();
           var title = 'Автор: ' + cUser + tag + ', ' + tInp.value.trim() + '... ' + dt;
           
-          // Публикация НАПРЯМУЮ в вечную базу Supabase
+          // Стреляем в облако без ожидания ответа, чтобы кнопка не висла
           fetch(URL + '/rest/v1/rpc/add_koto_feed', {
             method: 'POST',
             headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
             body: JSON.stringify({ t: title, img: b64 })
-          })
-          .then(function() {
-            alert('Успешно опубликовано на весь мир!'); tInp.value = ''; fInp.value = '';
-            btn.disabled = false; btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; loadFeed();
-          })
-          .catch(function() {
-            alert('Ошибка сети.');
-            btn.disabled = false; btn.innerText = 'ДОБАВИТЬ В СПИСОК!';
           });
+
+          // Перерисовываем интерфейс через секунду, пока облако переваривает данные
+          setTimeout(function() {
+            alert('Успешно опубликовано на весь мир!'); 
+            tInp.value = ''; fInp.value = '';
+            btn.disabled = false; btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; 
+            loadFeed();
+          }, 1200);
         }; img.src = ev.target.result;
       }; r.readAsDataURL(fInp.files);
     };

@@ -5,26 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>КОТОКАРТИНКА: просмотр</title>
   <style>
-    body { font-family: arial; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; background-color: #fff2e3; color: #333 }
-    img { display: block; margin: 20px 0; }
-    .admin-del-btn { background: #ff0000; color: #fff; border: 1px solid #000; font-family: arial; font-size: 11px; font-weight: bold; cursor: pointer; padding: 2px 5px; margin-top: 5px; }
+    body {
+      font-family: arial;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+      background-color: #fff2e3;
+      color: #333;
+    }
+    img {
+      display: block;
+      margin: 20px 0;
+    }
+    .admin-del-btn {
+      background: #ff0000; color: #fff; border: 1px solid #000;
+      font-family: arial; font-size: 11px; font-weight: bold;
+      cursor: pointer; padding: 2px 5px; margin-top: 5px;
+    }
   </style>
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <a href="index.html">На главную</a> | <a href="editor.html">Создать котокартинку</a><br><br>
+  <a href="/index.html">На главную</a> | <a href="/editor.html">Создать котокартинку</a><br><br>
 
-  <div id="guest-alert-block" style="display: none; border: 1px dashed #ff0000; padding: 10px; background-color: #fff; font-family: arial; font-size: 13px; text-align: center;">
-    <font color="red"><b>Чтобы добавлять котокартинки в список, пожалуйста, <a href="login.html">ВОЙДИТЕ</a> или <a href="register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
-  </div>
-
-  <table id="upload-form-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display: none;">
+  <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
     <tr>
       <td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку в список</b></font></td>
     </tr>
     <tr>
       <td align="right"><font face="arial" size="2">Автор:</font></td>
-      <td><b id="author-secure-label">Загрузка профиля...</b></td>
+      <td><input type="text" id="manual-author" size="30" value="Аноним"></td>
     </tr>
     <tr>
       <td align="right"><font face="arial" size="2">Текст с картинки:</font></td>
@@ -44,45 +55,22 @@
   </table>
 
   <br><br>
+
   <div id="dynamic-posts-container"></div>
   <div id="static-posts"></div>
+
+  <br>
+  СДЕЛАНО МЕМОМ РИЧАРДСОМ/РИЧИСОФТОМ 2026 год
 
   <script>
     var container = document.getElementById('dynamic-posts-container');
     var fileInput = document.getElementById('manual-file');
+    var authorInput = document.getElementById('manual-author');
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
-    var authorSecureLabel = document.getElementById('author-secure-label');
-    var guestAlertBlock = document.getElementById('guest-alert-block');
-    var uploadFormTable = document.getElementById('upload-form-table');
 
     var SUPABASE_URL = 'https://supabase.co';
     var SUPABASE_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
-
-    var currentUser = localStorage.getItem('koto_current_user');
-    var currentUserId = parseInt(localStorage.getItem('koto_current_id')) || 0;
-
-    if (currentUser) {
-      var checkName = currentUser.toLowerCase();
-      if ((checkName === 'richisoft' && currentUserId !== 1) || (checkName === 'тестер' && currentUserId !== 2)) {
-        localStorage.clear(); currentUser = null; currentUserId = 0;
-        alert('Защита: сессия скомпрометирована!');
-        window.location.href = 'login.html';
-      }
-    }
-
-    var roleTag = '';
-    if (currentUserId === 1) roleTag = ' [создатель]';
-    if (currentUserId === 2) roleTag = ' [тест]';
-
-    if (currentUser && currentUserId > 0) {
-      uploadFormTable.style.display = 'table';
-      authorSecureLabel.innerText = currentUser + roleTag;
-    } else {
-      guestAlertBlock.style.display = 'block';
-    }
-
-    var isGlobalAdmin = (currentUserId === 1 || currentUserId === 2);
 
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
@@ -91,13 +79,11 @@
         method: 'GET',
         headers: { 
           'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY
+          'Authorization': 'Bearer ' + SUPABASE_KEY, 
+          'Content-Type': 'application/json' 
         }
       })
-      .then(function(res) { 
-        if (!res.ok) throw new Error('Ошибка сервера: ' + res.status);
-        return res.json(); 
-      })
+      .then(function(res) { return res.json(); })
       .then(function(posts) {
         container.innerHTML = '';
         if (!posts || posts.length === 0) {
@@ -123,12 +109,13 @@
           postDiv.appendChild(titleNode);
           postDiv.appendChild(imgNode);
 
-          if (isGlobalAdmin) {
+          var currentAuthor = authorInput.value.trim().toLowerCase();
+          if (currentAuthor === 'richisoft' || currentAuthor === 'тестер') {
             var delBtn = document.createElement('button');
             delBtn.className = 'admin-del-btn';
             delBtn.textContent = '[Удалить эту котокартинку]';
             delBtn.onclick = function() {
-              if (confirm('Удалить мем из базы навсегда?')) {
+              if (confirm('Удалить этот мем из Supabase?')) {
                 deletePost(post.id);
               }
             };
@@ -143,43 +130,31 @@
           container.appendChild(postDiv);
         });
       })
-      .catch(function(err) {
-        container.innerHTML = '<font color="red">Ошибка загрузки ленты: ' + err.message + '</font>';
+      .catch(function() {
+        container.innerHTML = '<font color="red">Ошибка загрузки ленты облака.</font>';
       });
     }
 
     function deletePost(postId) {
       fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
         method: 'DELETE',
-        headers: { 
-          'apikey': SUPABASE_KEY, 
-          'Authorization': 'Bearer ' + SUPABASE_KEY 
-        }
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
       })
-      .then(function(res) { 
-        if(!res.ok) throw new Error(); 
-        alert('Успешно удалено!'); 
-        renderDynamicFeed(); 
-      })
-      .catch(function() { 
-        alert('Ошибка удаления!'); 
-      });
+      .then(function() { alert('Удалено!'); renderDynamicFeed(); });
     }
 
-    publishBtn.onclick = function(e) {
-      if (e) e.preventDefault(); 
-
-      if (!currentUser || currentUserId <= 0) {
-        alert('Ошибка: требуется авторизация!'); return;
+    publishBtn.onclick = function() {
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Выберите файл!'); return;
       }
-      if (!fileInput.files || fileInput.files.length === 0 || textInput.value.trim() === '') {
-        alert('Заполните все поля!'); return;
+      if (textInput.value.trim() === '') {
+        alert('Введите текст!'); return;
       }
 
       publishBtn.disabled = true;
       publishBtn.innerText = 'ОТПРАВКА...';
 
-      var file = fileInput.files;
+      var file = fileInput.files[0];
       var reader = new FileReader();
 
       reader.onload = function(event) {
@@ -187,7 +162,7 @@
         img.onload = function() {
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
-          var MAX_WIDTH = 600; 
+          var MAX_WIDTH = 700;
           var width = img.width; var height = img.height;
 
           if (width > MAX_WIDTH) {
@@ -197,11 +172,12 @@
           canvas.width = width; canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.50);
+          var compressedBase64 = canvas.toDataURL('image/jpeg', 0.60);
           var dateObj = new Date();
           var formattedDate = String(dateObj.getDate()).padStart(2, '0') + '.' + String(dateObj.getMonth() + 1).padStart(2, '0') + '.' + dateObj.getFullYear();
 
-          var templateTitle = 'Автор: ' + currentUser + roleTag + ', ' + textInput.value.trim() + '... ' + formattedDate;
+          var authorName = authorInput.value.trim() || 'Аноним';
+          var templateTitle = 'Автор: ' + authorName + ', ' + textInput.value.trim() + '... ' + formattedDate;
 
           fetch(SUPABASE_URL + '/rest/v1/kotokartinka_posts', {
             method: 'POST',
@@ -213,24 +189,25 @@
             },
             body: JSON.stringify({ text: templateTitle, image: compressedBase64 })
           })
-          .then(function(res) {
-            if(!res.ok) throw new Error();
-            alert('Успешно опубликовано!');
+          .then(function() {
+            alert('Опубликовано на весь мир!');
             textInput.value = ''; fileInput.value = '';
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
             renderDynamicFeed();
           })
           .catch(function() {
-            setTimeout(function() {
-              textInput.value = ''; fileInput.value = '';
-              publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
-              renderDynamicFeed();
-            }, 1000);
+            textInput.value = ''; fileInput.value = '';
+            publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
+            setTimeout(renderDynamicFeed, 1000);
           });
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(file);
+    };
+
+    authorInput.oninput = function() {
+      renderDynamicFeed();
     };
 
     renderDynamicFeed();

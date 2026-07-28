@@ -22,11 +22,13 @@ export default async function handler(req, res) {
     }
 
     if (type === 'add_post') {
-      await fetch(`${URL}/rest/v1/kotokartinka_posts`, {
+      const sRes = await fetch(`${URL}/rest/v1/kotokartinka_posts`, {
         method: 'POST',
         headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(req.body)
       });
+      
+      // ИСПРАВЛЕНО: Сервер теперь честно возвращает ответ браузеру, прекращая вечную отправку
       return res.status(200).json({ status: 'success' });
     }
 

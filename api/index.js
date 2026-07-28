@@ -4,36 +4,56 @@ const KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, apikey, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   const { type, id } = req.query;
 
   try {
-    // 1. СЕРВЕРНОЕ ЧТЕНИЕ ЛЕНТЫ ИЗ SUPABASE
+    // 1. СЕРВЕРНОЕ ЧТЕНИЕ ЛЕНТЫ С АВТОРИЗАЦИЕЙ КЛЮЧА
     if (type === 'get_feed') {
       const sRes = await fetch(`${URL}/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc`, {
-        headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Range': '0-24' }
+        method: 'GET',
+        headers: { 
+          'apikey': KEY, 
+          'Authorization': 'Bearer ' + KEY
+        }
       });
+      
       const data = await sRes.json();
+      
+      // Если вместо массива пришла ошибка от Supabase, выводим её в консоль Vercel и шлем пустой массив
+      if (!Array.isArray(data)) {
+        console.error('Supabase error logs:', data);
+        return res.status(200).json([]);
+      }
+      
       return res.status(200).json(data);
     }
 
-    // 2. СЕРВЕРНАЯ ПУБЛИКАЦИЯ В SUPABASE
+    // 2. СЕРВЕРНАЯ ПУБЛИКАЦИЯ
     if (type === 'add_post') {
-      const sRes = await fetch(`${URL}/rest/v1/kotokartinka_posts`, {
+      await fetch(`${URL}/rest/v1/kotokartinka_posts`, {
         method: 'POST',
-        headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { 
+          'apikey': KEY, 
+          'Authorization': 'Bearer ' + KEY, 
+          'Content-Type': 'application/json', 
+          'Prefer': 'return=minimal' 
+        },
         body: JSON.stringify(req.body)
       });
       return res.status(200).json({ status: 'success' });
     }
 
-    // 3. СЕРВЕРНОЕ УДАЛЕНИЕ ИЗ SUPABASE
+    // 3. СЕРВЕРНОЕ УДАЛЕНИЕ
     if (type === 'delete_post') {
       await fetch(`${URL}/rest/v1/kotokartinka_posts?id=eq.${id}`, {
         method: 'DELETE',
-        headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` }
+        headers: { 
+          'apikey': KEY, 
+          'Authorization': 'Bearer ' + KEY 
+        }
       });
       return res.status(200).json({ status: 'success' });
     }

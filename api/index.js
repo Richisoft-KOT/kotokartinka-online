@@ -26,7 +26,6 @@ export default async function handler(req, res) {
         data = [];
       }
       
-      // ЖЕСТКАЯ СТРАХОВКА: Если Supabase вернул ошибку-объект, принудительно отдаем пустой массив
       if (!data || !Array.isArray(data)) {
         return res.status(200).json([]);
       }
@@ -53,7 +52,7 @@ export default async function handler(req, res) {
         method: 'DELETE',
         headers: { 
           'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEYPre-flight request blocks custom headers or content types under strict configuration. We ensure explicit JSON fallback logic.` 
+          'Authorization': 'Bearer ' + KEY
         }
       });
       return res.status(200).json({ status: 'success' });

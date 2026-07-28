@@ -13,12 +13,10 @@
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
   <a href="index.html">На главную</a> | <a href="editor.html">Создать котокартинку</a><br><br>
 
-  <!-- Блок для гостей -->
   <div id="g-block" style="display:none;border:1px dashed #f00;padding:10px;background:#fff;font-family:arial;font-size:13px;text-align:center;">
     <font color="red"><b>Чтобы добавлять котокартинки, <a href="login.html">ВОЙДИТЕ</a> или <a href="register.html">ЗАРЕГИСТРИРУЙТЕСЬ</a>!</b></font>
   </div>
 
-  <!-- Таблица загрузки -->
   <table id="f-table" border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="display:none;">
     <tr><td bgcolor="#ff9900" colspan="2"><font face="arial" size="3" color="#ffffff"><b>Добавить котокартинку</b></font></td></tr>
     <tr><td align="right"><font face="arial" size="2">Автор:</font></td><td><b id="u-lbl" style="font-family:arial;font-size:14px;">...</b></td></tr>
@@ -27,18 +25,18 @@
     <tr><td colspan="2" align="center"><button id="pub-btn" style="font-family:arial;font-weight:bold;padding:4px 10px;">ДОБАВИТЬ В СПИСОК!</button></td></tr>
   </table>
   <br><br>
-  
-  <!-- Контейнер для мемов -->
   <div id="p-box"></div>
 
   <script>
     var box=document.getElementById('p-box'), fInp=document.getElementById('m-file'), tInp=document.getElementById('m-txt'), btn=document.getElementById('pub-btn');
     var lbl=document.getElementById('u-lbl'), gBlk=document.getElementById('g-block'), tbl=document.getElementById('f-table');
 
+    // Настройки твоей вечной базы данных Supabase
+    var URL='https://supabase.co', KEY='sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77';
+
     var cUser = localStorage.getItem('koto_current_user');
     var cId = parseInt(localStorage.getItem('koto_current_id')) || 0;
 
-    // Проверка сессии от хакеров
     if (cUser) {
       var checkName = cUser.toLowerCase();
       if ((checkName === 'richisoft' && cId !== 1) || (checkName === 'тестер' && cId !== 2)) {
@@ -49,29 +47,41 @@
     }
 
     var tag = cId === 1 ? ' [создатель]' : (cId === 2 ? ' [тест]' : '');
-    var isAdmin = (cId === 1 || cId === 2);
+    var isGlobalAdmin = (cId === 1 || cId === 2);
 
-    if(cUser && cId > 0){ 
-      tbl.style.display='table'; 
-      lbl.innerText = cUser + tag; 
-    } else { 
-      gBlk.style.display='block'; 
-    }
+    if(cUser && cId > 0){ tbl.style.display='table'; lbl.innerText = cUser + tag; } else { gBlk.style.display='block'; }
 
+    // Чтение НАПРЯМУЮ из Supabase методом GET (Память никогда не сотрется!)
     function loadFeed(){
-      box.innerHTML='<font face="arial" size="2">Загрузка ленты...</font>';
-      fetch('/api?type=get_feed')
+      box.innerHTML='<font face="arial" size="2">Загрузка ленты облака...</font>';
+      fetch(URL + '/rest/v1/rpc/get_koto_feed_json', {
+        method: 'GET',
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+      })
       .then(function(r){ return r.json(); })
       .then(function(data) {
         box.innerHTML=''; if(!data||data.length===0){ box.innerHTML='<b>Пока нет глобальных котокартинок. Будь первым!</b>'; return; }
         data.forEach(function(p){
           var d=document.createElement('div'); d.style.marginBottom='40px';
-          var t=document.createElement('div'); t.innerHTML='<b>'+p.title+'</b><br>';
+          var t=document.createElement('div'); t.innerHTML='<b>'+p.text+'</b><br>';
           var i=document.createElement('img'); i.src=p.image; i.style.maxWidth='750px'; i.style.height='auto'; i.style.border='1px solid #000';
           d.appendChild(t); d.appendChild(i);
-          var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); box.appendChild(d);
+
+          if (isGlobalAdmin) {
+            var delBtn = document.createElement('button'); delBtn.className = 'del-btn'; delBtn.textContent = '[Удалить эту котокартинку]';
+            delBtn.onclick = function() { if (confirm('Удалить мем?')) deletePost(p.id); }; d.appendChild(delBtn);
+          }
+          var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); d.appendChild(document.createElement('br')); box.appendChild(d);
         });
-      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка: '+e.message+'</font>'; });
+      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка связи: '+e.message+'</font>'; });
+    }
+
+    function deletePost(postId) {
+      fetch(URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
+        method: 'DELETE',
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+      })
+      .then(function() { alert('Успешно удалено из облака!'); loadFeed(); });
     }
 
     btn.onclick = function(e) {
@@ -79,40 +89,34 @@
       if (!cUser || cId <= 0) { alert('Нужен аккаунт!'); return; }
       if (!fInp.files || fInp.files.length === 0 || tInp.value.trim() === '') { alert('Заполните все поля!'); return; }
       
-      btn.disabled = true; 
-      btn.innerText = 'ОТПРАВКА...';
-      
+      btn.disabled = true; btn.innerText = 'ОТПРАВКА...';
       var r = new FileReader(); 
       r.onload = function(ev) {
         var img = new Image(); 
         img.onload = function() {
-          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 650, w = img.width, h = img.height;
-          if (w > W) { h = Math.round((h * W) / w); w = W; } 
-          cv.width = w; cv.height = h; 
-          cx.drawImage(img, 0, 0, w, h);
+          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 600, h = img.height, w = img.width;
+          if (w > W) { h = Math.round((h * W) / w); w = W; } cv.width = w; cv.height = h; cx.drawImage(img, 0, 0, w, h);
           
-          var b64 = cv.toDataURL('image/jpeg', 0.50); 
+          var b64 = cv.toDataURL('image/jpeg', 0.55); 
           var o = new Date(), dt = String(o.getDate()).padStart(2, '0') + '.' + String(o.getMonth() + 1).padStart(2, '0') + '.' + o.getFullYear();
           var title = 'Автор: ' + cUser + tag + ', ' + tInp.value.trim() + '... ' + dt;
           
-          fetch('/api?type=add_post', {
+          // Публикация НАПРЯМУЮ в вечную базу Supabase
+          fetch(URL + '/rest/v1/rpc/add_koto_feed', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title, image: b64 })
+            headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ t: title, img: b64 })
+          })
+          .then(function() {
+            alert('Успешно опубликовано на весь мир!'); tInp.value = ''; fInp.value = '';
+            btn.disabled = false; btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; loadFeed();
+          })
+          .catch(function() {
+            alert('Ошибка сети.');
+            btn.disabled = false; btn.innerText = 'ДОБАВИТЬ В СПИСОК!';
           });
-
-          setTimeout(function() {
-            alert('Успешно опубликовано!'); 
-            tInp.value = ''; 
-            fInp.value = ''; 
-            btn.disabled = false; 
-            btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; 
-            loadFeed();
-          }, 1000);
-        }; 
-        img.src = ev.target.result;
-      }; 
-      r.readAsDataURL(fInp.files[0]);
+        }; img.src = ev.target.result;
+      }; r.readAsDataURL(fInp.files);
     };
     loadFeed();
   </script>

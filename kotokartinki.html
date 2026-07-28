@@ -25,6 +25,7 @@
     <tr><td colspan="2" align="center"><button id="pub-btn" style="font-family:arial;font-weight:bold;padding:4px 10px;">ДОБАВИТЬ В СПИСОК!</button></td></tr>
   </table>
   <br><br>
+  
   <div id="p-box"></div>
 
   <script>
@@ -46,18 +47,25 @@
     }
 
     var tag = cId === 1 ? ' [создатель]' : (cId === 2 ? ' [тест]' : '');
-    var isGlobalAdmin = (cId === 1 || cId === 2);
+    var isAdmin = (cId === 1 || cId === 2);
 
-    if(cUser && cId > 0){ tbl.style.display='table'; lbl.innerText = cUser + tag; } else { gBlk.style.display='block'; }
+    if(cUser && cId > 0){ 
+      tbl.style.display='table'; 
+      lbl.innerText = cUser + tag; 
+    } else { 
+      gBlk.style.display='block'; 
+    }
 
     function loadFeed(){
       box.innerHTML='<font face="arial" size="2">Загрузка ленты...</font>';
-      fetch(URL + '/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc', {
-        method: 'GET',
+      fetch(URL + '/rest/v1/rpc/get_koto_feed_json', {
+        method: 'POST',
         headers: { 
           'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY
-        }
+          'Authorization': 'Bearer ' + KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
       })
       .then(function(r){ return r.json(); })
       .then(function(data) {
@@ -67,22 +75,21 @@
           var t=document.createElement('div'); t.innerHTML='<b>'+p.text+'</b><br>';
           var i=document.createElement('img'); i.src=p.image; i.style.maxWidth='750px'; i.style.height='auto'; i.style.border='1px solid #000';
           d.appendChild(t); d.appendChild(i);
-
-          if (isGlobalAdmin) {
-            var delBtn = document.createElement('button'); delBtn.className = 'del-btn'; delBtn.textContent = '[Удалить эту котокартинку]';
-            delBtn.onclick = function() { if (confirm('Удалить мем?')) deletePost(p.id); }; d.appendChild(delBtn);
+          if(isAdmin){
+            var b=document.createElement('button'); b.className='del-btn'; b.textContent='[Удалить эту котокартинку]';
+            b.onclick=function(){ if(confirm('Удалить мем?')) deletePost(p.id); }; d.appendChild(b);
           }
-          var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); d.appendChild(document.createElement('br')); box.appendChild(d);
+          var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); box.appendChild(d);
         });
-      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка связи: '+e.message+'</font>'; });
+      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка: '+e.message+'</font>'; });
     }
 
-    function deletePost(postId) {
-      fetch(URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
+    function deletePost(id) {
+      fetch(URL + '/rest/v1/kotokartinka_posts?id=eq.' + id, {
         method: 'DELETE',
         headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
       })
-      .then(function() { alert('Успешно удалено из облака!'); loadFeed(); });
+      .then(function() { alert('Успешно удалено!'); loadFeed(); });
     }
 
     btn.onclick = function(e) {
@@ -90,32 +97,40 @@
       if (!cUser || cId <= 0) { alert('Нужен аккаунт!'); return; }
       if (!fInp.files || fInp.files.length === 0 || tInp.value.trim() === '') { alert('Заполните все поля!'); return; }
       
-      btn.disabled = true; btn.innerText = 'ОТПРАВКА...';
+      btn.disabled = true; 
+      btn.innerText = 'ОТПРАВКА...';
+      
       var r = new FileReader(); 
       r.onload = function(ev) {
         var img = new Image(); 
         img.onload = function() {
-          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 550, h = img.height, w = img.width;
-          if (w > W) { h = Math.round((h * W) / w); w = W; } cv.width = w; cv.height = h; cx.drawImage(img, 0, 0, w, h);
+          var cv = document.createElement('canvas'), cx = cv.getContext('2d'), W = 650, w = img.width, h = img.height;
+          if (w > W) { h = Math.round((h * W) / w); w = W; } 
+          cv.width = w; cv.height = h; 
+          cx.drawImage(img, 0, 0, w, h);
           
           var b64 = cv.toDataURL('image/jpeg', 0.50); 
           var o = new Date(), dt = String(o.getDate()).padStart(2, '0') + '.' + String(o.getMonth() + 1).padStart(2, '0') + '.' + o.getFullYear();
           var title = 'Автор: ' + cUser + tag + ', ' + tInp.value.trim() + '... ' + dt;
           
-          fetch(URL + '/rest/v1/kotokartinka_posts', {
+          fetch(URL + '/rest/v1/rpc/add_koto_feed', {
             method: 'POST',
-            headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ text: title, image: b64 })
+            headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ t: title, img: b64 })
           });
 
           setTimeout(function() {
-            alert('Успешно опубликовано на весь мир!'); 
-            tInp.value = ''; fInp.value = '';
-            btn.disabled = false; btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; 
+            alert('Успешно опубликовано!'); 
+            tInp.value = ''; 
+            fInp.value = ''; 
+            btn.disabled = false; 
+            btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; 
             loadFeed();
-          }, 1200);
-        }; img.src = ev.target.result;
-      }; r.readAsDataURL(fInp.files);
+          }, 1000);
+        }; 
+        img.src = ev.target.result;
+      }; 
+      r.readAsDataURL(fInp.files[0]);
     };
     loadFeed();
   </script>

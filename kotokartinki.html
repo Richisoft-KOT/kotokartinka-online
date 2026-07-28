@@ -3,7 +3,7 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КОТоКАРТИНКА: просмотр</title>
+  <title>КОТОКАРТИНКА: просмотр</title>
   <style>
     body{font-family:arial;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6;background:#fff2e3;color:#333}
     img{display:block;margin:20px 0;}
@@ -58,16 +58,19 @@
 
     function loadFeed(){
       box.innerHTML='<font face="arial" size="2">Загрузка ленты...</font>';
+      
+      // ИСПРАВЛЕНО: Читающие RPC-функции в Supabase запрашиваются строго через GET без тела запроса (body)
       fetch(URL + '/rest/v1/rpc/get_koto_feed_json', {
-        method: 'POST',
+        method: 'GET',
         headers: { 
           'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
+          'Authorization': 'Bearer ' + KEY
+        }
       })
-      .then(function(r){ return r.json(); })
+      .then(function(r){ 
+        if(!r.ok) throw new Error('Статус: ' + r.status);
+        return r.json(); 
+      })
       .then(function(data) {
         box.innerHTML=''; if(!data||data.length===0){ box.innerHTML='<b>Пока нет глобальных котокартинок. Будь первым!</b>'; return; }
         data.forEach(function(p){
@@ -81,7 +84,7 @@
           }
           var h=document.createElement('hr'); h.setAttribute('align','left'); h.setAttribute('width','750'); d.appendChild(h); box.appendChild(d);
         });
-      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка: '+e.message+'</font>'; });
+      }).catch(function(e){ box.innerHTML='<font color="red">Ошибка связи: '+e.message+'</font>'; });
     }
 
     function deletePost(id) {
@@ -113,6 +116,7 @@
           var o = new Date(), dt = String(o.getDate()).padStart(2, '0') + '.' + String(o.getMonth() + 1).padStart(2, '0') + '.' + o.getFullYear();
           var title = 'Автор: ' + cUser + tag + ', ' + tInp.value.trim() + '... ' + dt;
           
+          // Модифицирующие функции (add) по-прежнему требуют POST
           fetch(URL + '/rest/v1/rpc/add_koto_feed', {
             method: 'POST',
             headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
@@ -126,11 +130,11 @@
             btn.disabled = false; 
             btn.innerText = 'ДОБАВИТЬ В СПИСОК!'; 
             loadFeed();
-          }, 1000);
+          }, 1200);
         }; 
         img.src = ev.target.result;
       }; 
-      r.readAsDataURL(fInp.files[0]);
+      r.readAsDataURL(fInp.files);
     };
     loadFeed();
   </script>

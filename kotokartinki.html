@@ -52,23 +52,12 @@
     var textInput = document.getElementById('manual-text');
     var publishBtn = document.getElementById('manual-publish-btn');
 
-    var URL = 'https://supabase.co';
-    var KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
-
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      fetch(URL + '/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc', {
-        method: 'GET',
-        headers: { 
-          'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY,
-          'Content-Type': 'application/json',
-          'Range': '0-24',
-          'Prefer': 'count=exact'
-        }
-      })
-      .then(function(res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+      // Запрашиваем через свой сервер на Vercel
+      fetch('/api?type=get_feed')
+      .then(function(res) { return res.json(); })
       .then(function(posts) {
         container.innerHTML = '';
         if (!posts || posts.length === 0) {
@@ -112,18 +101,12 @@
         });
       })
       .catch(function(err) {
-        container.innerHTML = '<font color="red">Ошибка сети: ' + err.message + '. Браузер блокирует CORS-запрос.</font>';
+        container.innerHTML = '<font color="red">Ошибка сети: ' + err.message + '</font>';
       });
     }
 
     function deletePost(postId) {
-      fetch(URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
-        method: 'DELETE',
-        headers: { 
-          'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY 
-        }
-      })
+      fetch('/api?type=delete_post&id=' + postId, { method: 'POST' })
       .then(function() { alert('Удалено!'); renderDynamicFeed(); });
     }
 
@@ -158,34 +141,25 @@
           var authorName = authorInput.value.trim() || 'Аноним';
           var templateTitle = 'Автор: ' + authorName + ', ' + textInput.value.trim() + '... ' + formattedDate;
 
-          fetch(URL + '/rest/v1/kotokartinka_posts', {
+          fetch('/api?type=add_post', {
             method: 'POST',
-            headers: { 
-              'apikey': KEY, 
-              'Authorization': 'Bearer ' + KEY, 
-              'Content-Type': 'application/json', 
-              'Prefer': 'return=minimal' 
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: templateTitle, image: compressedBase64 })
           })
-          .then(function(res) {
-            if(!res.ok) throw new Error(res.status);
+          .then(function() {
             alert('Опубликовано!');
             textInput.value = ''; fileInput.value = '';
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
             renderDynamicFeed();
           })
           .catch(function() {
-            setTimeout(function() {
-              textInput.value = ''; fileInput.value = '';
-              publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
-              renderDynamicFeed();
-            }, 1000);
+            alert('Сбой шлюза.');
+            publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
           });
         };
         img.src = event.target.result;
       };
-      reader.readAsDataURL(fileInput.files);
+      reader.readAsDataURL(fileInput.files[0]);
     };
 
     authorInput.oninput = function() { renderDynamicFeed(); };
@@ -193,4 +167,3 @@
   </script>
 </body>
 </html>
-

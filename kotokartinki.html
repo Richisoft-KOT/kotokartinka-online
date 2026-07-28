@@ -12,7 +12,7 @@
 </head>
 <body bgcolor="#fff2e3" text="#333333" link="#0000ee" vlink="#551a8b">
 
-  <a href="/index.html">На главную</a> | <a href="/editor.html">Создать котокартинку</a><br><br>
+  <a href="index.html">На главную</a> | <a href="editor.html">Создать котокартинку</a><br><br>
 
   <table border="1" cellpadding="10" cellspacing="0" bgcolor="#ffffff">
     <tr>
@@ -55,7 +55,6 @@
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      // Запрашиваем через свой сервер на Vercel
       fetch('/api?type=get_feed')
       .then(function(res) { return res.json(); })
       .then(function(posts) {
@@ -126,7 +125,7 @@
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
           
-          var MAX_WIDTH = 500;
+          var MAX_WIDTH = 550;
           var width = img.width; var height = img.height;
           if (width > MAX_WIDTH) {
             height = Math.round((height * MAX_WIDTH) / width);
@@ -153,13 +152,13 @@
             renderDynamicFeed();
           })
           .catch(function() {
-            alert('Сбой шлюза.');
+            alert('Сбой.');
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
           });
         };
         img.src = event.target.result;
       };
-      reader.readAsDataURL(fileInput.files[0]);
+      reader.readAsDataURL(fileInput.files);
     };
 
     authorInput.oninput = function() { renderDynamicFeed(); };

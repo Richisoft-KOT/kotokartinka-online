@@ -3,7 +3,7 @@
 <head>
   <meta charset="windows-1251">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>кОТОКАРТИНКА: просмотр</title>
+  <title>КОТОКАРТИНКА: просмотр</title>
   <style>
     body { font-family: arial; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; background-color: #fff2e3; color: #333; }
     img { display: block; margin: 20px 0; }
@@ -58,13 +58,14 @@
     function renderDynamicFeed() {
       container.innerHTML = '<font face="arial" size="2">Загрузка ленты...</font>';
       
-      // ИСПРАВЛЕНО: Явные заголовки контента для пробития CORS
       fetch(URL + '/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc', {
         method: 'GET',
         headers: { 
           'apikey': KEY, 
           'Authorization': 'Bearer ' + KEY,
-          'Content-Type': 'application/json; charset=utf-8'
+          'Content-Type': 'application/json',
+          'Range': '0-24',
+          'Prefer': 'count=exact'
         }
       })
       .then(function(res) { if (!res.ok) throw new Error(res.status); return res.json(); })
@@ -118,7 +119,10 @@
     function deletePost(postId) {
       fetch(URL + '/rest/v1/kotokartinka_posts?id=eq.' + postId, {
         method: 'DELETE',
-        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+        headers: { 
+          'apikey': KEY, 
+          'Authorization': 'Bearer ' + KEY 
+        }
       })
       .then(function() { alert('Удалено!'); renderDynamicFeed(); });
     }
@@ -139,7 +143,6 @@
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
           
-          // ИСПРАВЛЕНО ЖЕСТКО: Ужимаем картинку до 500px, чтобы она мгновенно пролетала через CORS-фильтры
           var MAX_WIDTH = 500;
           var width = img.width; var height = img.height;
           if (width > MAX_WIDTH) {
@@ -160,7 +163,7 @@
             headers: { 
               'apikey': KEY, 
               'Authorization': 'Bearer ' + KEY, 
-              'Content-Type': 'application/json; charset=utf-8', 
+              'Content-Type': 'application/json', 
               'Prefer': 'return=minimal' 
             },
             body: JSON.stringify({ text: templateTitle, image: compressedBase64 })
@@ -172,8 +175,7 @@
             publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
             renderDynamicFeed();
           })
-          .catch(function(err) {
-            alert('Сбой шлюза. Перезагрузка ленты через 1 сек...');
+          .catch(function() {
             setTimeout(function() {
               textInput.value = ''; fileInput.value = '';
               publishBtn.disabled = false; publishBtn.innerText = 'ДОБАВИТЬ В СПИСОК!';
@@ -183,7 +185,7 @@
         };
         img.src = event.target.result;
       };
-      reader.readAsDataURL(fileInput.files[0]);
+      reader.readAsDataURL(fileInput.files);
     };
 
     authorInput.oninput = function() { renderDynamicFeed(); };
@@ -191,3 +193,4 @@
   </script>
 </body>
 </html>
+

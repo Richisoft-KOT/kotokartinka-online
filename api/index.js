@@ -13,35 +13,18 @@ export default async function handler(req, res) {
     if (type === 'get_feed') {
       const sRes = await fetch(`${URL}/rest/v1/kotokartinka_posts?select=id,text,image&order=id.desc`, {
         method: 'GET',
-        headers: { 
-          'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY
-        }
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
       });
-      
       let data;
-      try {
-        data = await sRes.json();
-      } catch(e) {
-        data = [];
-      }
-      
-      if (!data || !Array.isArray(data)) {
-        return res.status(200).json([]);
-      }
-      
+      try { data = await sRes.json(); } catch(e) { data = []; }
+      if (!data || !Array.isArray(data)) return res.status(200).json([]);
       return res.status(200).json(data);
     }
 
     if (type === 'add_post') {
       await fetch(`${URL}/rest/v1/kotokartinka_posts`, {
         method: 'POST',
-        headers: { 
-          'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY, 
-          'Content-Type': 'application/json', 
-          'Prefer': 'return=minimal' 
-        },
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(req.body)
       });
       return res.status(200).json({ status: 'success' });
@@ -50,14 +33,10 @@ export default async function handler(req, res) {
     if (type === 'delete_post') {
       await fetch(`${URL}/rest/v1/kotokartinka_posts?id=eq.${id}`, {
         method: 'DELETE',
-        headers: { 
-          'apikey': KEY, 
-          'Authorization': 'Bearer ' + KEY
-        }
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
       });
       return res.status(200).json({ status: 'success' });
     }
-
     return res.status(400).json({ error: 'bad_route' });
   } catch (err) {
     return res.status(200).json([]);

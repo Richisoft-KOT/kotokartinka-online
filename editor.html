@@ -226,7 +226,7 @@
         var realFontSize = Math.floor(cap.size * scaleFactor);
 
         ctx.translate(realX, realY);
-        var fontStr = 'bold ' + realFontSize + 'px Arial';
+        var fontStr = realFontSize + 'px Arial';
         var strokeW = Math.max(1, realFontSize * 0.05);
         drawStrokeTextOldschool(ctx, cap.text, 0, realFontSize * 0.8, fontStr, cap.color, strokeW);
         ctx.restore();
@@ -234,7 +234,7 @@
 
       var watermarkSize = Math.max(12, Math.floor(canvas.width * 0.024)); 
       var watermarkY = canvas.height - 15;
-      var fontW = 'bold ' + watermarkSize + 'px Arial';
+      var fontW = watermarkSize + 'px Arial';
       var strokeW = Math.max(1, watermarkSize * 0.05);
       var txt = "котокартинка - kotokartinka-online.vercel.app, телега - https://t.me/KotokartinkaMEMES";
       drawStrokeTextOldschool(ctx, txt, 20, watermarkY, fontW, '#ffffff', strokeW);

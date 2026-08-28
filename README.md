@@ -1,3 +1,4 @@
+<img width="604" height="421" alt="normal" src="https://github.com/user-attachments/assets/43666f6e-b8e0-410b-a0e4-0df06245a3c6" />
 <img width="1920" height="1080" alt="backround" src="https://github.com/user-attachments/assets/3d317e0d-8cee-44b5-baed-0012191ebc75" />
 <img width="20" height="24" alt="smile3" src="https://github.com/user-attachments/assets/f0cc8bca-ef3f-48ef-b62b-384f25be55a6" />
 

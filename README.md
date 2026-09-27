@@ -1,3 +1,5 @@
+<img width="1270" height="720" alt="Доска почета" src="https://github.com/user-attachments/assets/afea5a1d-a1ac-4383-8285-a12f7e94dcbc" />
+<img width="1270" height="720" alt="Доска почета (форум)" src="https://github.com/user-attachments/assets/cd1e35f2-bd0d-4801-a377-c94508eef26a" />
 <img width="604" height="453" alt="normal (3)" src="https://github.com/user-attachments/assets/dde295f1-8ba9-4ef3-8c08-2a57cbe03ad6" />
 <img width="510" height="510" alt="normal (4)" src="https://github.com/user-attachments/assets/d1de885a-f67b-4fae-bfe7-6abf601f847b" />
 <img width="604" height="412" alt="normal (2)" src="https://github.com/user-attachments/assets/3bf7e1f4-f77c-456e-b6e5-9ca8001628a2" />

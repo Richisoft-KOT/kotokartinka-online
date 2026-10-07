@@ -87,7 +87,7 @@
     <div id="fixed-captions-layer" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>
 
     <div id="preview-watermark" class="oldschool-text" style="position: absolute; left: 15px; bottom: 15px; pointer-events: none; color: #ffffff; display: none; font-size: 13px;">
-      kotokartinka-online.vercel.app
+      kotokartinka.is-cool.dev
     </div>
   </div>
 
@@ -239,12 +239,12 @@
       var watermarkY = canvas.height - 15;
       var fontW = watermarkSize + 'px Arial';
       var strokeW = Math.max(1, watermarkSize * 0.05);
-      var txt = "kotokartinka-online.vercel.app";
+      var txt = "kotokartinka.is-cool.dev";
       drawStrokeTextOldschool(ctx, txt, 20, watermarkY, fontW, '#ffffff', strokeW);
 
       var link = document.createElement('a');
-      link.download = 'kotokartinka.png';
-      link.href = canvas.toDataURL('image/png');
+      link.download = 'kotokartinka.jpg';
+      link.href = canvas.toDataURL('image/jpg');
       link.click();
     };
   </script>

@@ -75,11 +75,8 @@
 
   <br>
   <button id="download-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
-СКАЧАТЬ ТВОРЕНИЕ!
-</button>
-<!-- Вот та самая плашка без CSS стилей -->
-<div id="meme-text-plate" style="margin-top: 15px;"></div>
-
+    СКАЧАТЬ ТВОРЕНИЕ!
+  </button>
   <br><br>
 
   <div id="preview-area" style="position: relative; display: inline-block; border: 1px solid #000000; cursor: crosshair; min-width: 320px; min-height: 240px; background-color: #ccc;">
@@ -216,15 +213,11 @@
       context.fillText(text, x, y);
     }
 
-    // Функция обработки скачивания с рендерингом холста и добавлением водяного знака
-downloadBtn.onclick = function() {
-    if (!loadedImage) return;
-    // Настройка размеров и отрисовка изображения с подписями
-    // ...
-    var plate = document.getElementById('meme-text-plate');
-    plate.innerText = finalMemeText + "... Еще больше мемов: котокартинка - https://openvk.org";
-    // Генерация и запуск скачивания файла
-};
+    downloadBtn.onclick = function() {
+      if (!loadedImage) return;
+      canvas.width = loadedImage.naturalWidth;
+      canvas.height = loadedImage.naturalHeight;
+      ctx.drawImage(loadedImage, 0, 0);
 
       savedCaptions.forEach(function(cap) {
         ctx.save();

@@ -6,7 +6,7 @@
   <title>КОТОКАРТИНКА: редактор</title>
   <style>
     html { 
-      background: url('https://github.com/user-attachments/assets/3d317e0d-8cee-44b5-baed-0012191ebc75') no-repeat center center / cover fixed; 
+      background: url('https://github.com') no-repeat center center / cover fixed; 
       }
     .oldschool-text {
       font-family: Arial, sans-serif;
@@ -77,6 +77,14 @@
   <button id="download-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
     СКАЧАТЬ ТВОРЕНИЕ!
   </button>
+  
+  <!-- ПРОСТАЯ ПЛАШКА БЕЗ СТИЛЕЙ -->
+  <div id="openvk-box" style="display: none; margin-top: 15px;">
+    <font face="arial" size="2">Текст для OpenVK (Правило №8):</font><br>
+    <input type="text" id="openvk-text-output" size="90" readonly>
+    <button id="copy-text-btn">Скопировать текст</button>
+  </div>
+  
   <br><br>
 
   <div id="preview-area" style="position: relative; display: inline-block; border: 1px solid #000000; cursor: crosshair; min-width: 320px; min-height: 240px; background-color: #ccc;">
@@ -111,6 +119,11 @@
     var canvas = document.getElementById('canvas-helper');
     var ctx = canvas.getContext('2d');
 
+    // Переменные для текста OpenVK
+    var openvkBox = document.getElementById('openvk-box');
+    var openvkTextOutput = document.getElementById('openvk-text-output');
+    var copyTextBtn = document.getElementById('copy-text-btn');
+
     var loadedImage = null;
     var savedCaptions = []; 
     var currentXPercent = 10;
@@ -133,6 +146,7 @@
           savedCaptions = []; 
           renderAllFixedCaptions();
           updateFloatingStyles();
+          openvkBox.style.display = 'none'; // Скрываем при выборе новой картинки
         };
         loadedImage.src = event.target.result;
       };
@@ -203,49 +217,31 @@
     textColorSelect.onchange = updateFloatingStyles;
     fontSizeSelect.onchange = updateFloatingStyles;
 
-    function drawStrokeTextOldschool(context, text, x, y, fontStyle, color, lineWidth) {
-      context.font = fontStyle;
-      context.textAlign = 'left';
-      context.strokeStyle = '#000000';
-      context.lineWidth = lineWidth;
-      context.strokeText(text, x, y);
-      context.fillStyle = color;
-      context.fillText(text, x, y);
-    }
-
+    // Сбор текста и показ строки при клике на скачивание
     downloadBtn.onclick = function() {
       if (!loadedImage) return;
-      canvas.width = loadedImage.naturalWidth;
-      canvas.height = loadedImage.naturalHeight;
-      ctx.drawImage(loadedImage, 0, 0);
+      
+      // Склеиваем все надписи, которые добавлены на картинку
+      var allTexts = savedCaptions.map(function(cap) { return cap.text; }).join(' ');
+      
+      // Если на картинку ничего не прикрепили, берём то, что введено в поле прямо сейчас
+      if (allTexts.trim() === "" && textInput.value.trim() !== "") {
+        allTexts = textInput.value;
+      }
 
-      savedCaptions.forEach(function(cap) {
-        ctx.save();
-        var realX = (cap.xPct / 100) * canvas.width;
-        var realY = (cap.yPct / 100) * canvas.height;
-        
-        var previewWidth = previewImg.clientWidth || 750;
-        var scaleFactor = canvas.width / previewWidth;
-        var realFontSize = Math.floor(cap.size * scaleFactor);
+      // Генерируем строку строго по правилу №8
+      var openvkFormattedText = "[" + allTexts + "]. еще больше мемов: котокартинка - https://openvk.org";
+      
+      // Выводим в поле и показываем блок
+      openvkTextOutput.value = openvkFormattedText;
+      openvkBox.style.display = 'block';
+    };
 
-        ctx.translate(realX, realY);
-        var fontStr = realFontSize + 'px Arial';
-        var strokeW = Math.max(1, realFontSize * 0.05);
-        drawStrokeTextOldschool(ctx, cap.text, 0, realFontSize * 0.8, fontStr, cap.color, strokeW);
-        ctx.restore();
-      });
-
-      var watermarkSize = Math.max(12, Math.floor(canvas.width * 0.024)); 
-      var watermarkY = canvas.height - 15;
-      var fontW = watermarkSize + 'px Arial';
-      var strokeW = Math.max(1, watermarkSize * 0.05);
-      var txt = "kotokartinka.is-cool.dev";
-      drawStrokeTextOldschool(ctx, txt, 20, watermarkY, fontW, '#ffffff', strokeW);
-
-      var link = document.createElement('a');
-      link.download = 'kotokartinka.jpg';
-      link.href = canvas.toDataURL('image/jpg');
-      link.click();
+    // Простое копирование текста в буфер обмена
+    copyTextBtn.onclick = function() {
+      openvkTextOutput.select();
+      openvkTextOutput.setSelectionRange(0, 99999);
+      document.execCommand("copy");
     };
   </script>
 </body>

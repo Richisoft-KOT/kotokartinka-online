@@ -6,7 +6,7 @@
   <title>КОТОКАРТИНКА: редактор</title>
   <style>
     html { 
-      background: url('https://github.com/user-attachments/assets/3d317e0d-8cee-44b5-baed-0012191ebc75') no-repeat center center / cover fixed; 
+      background: url('https://github.com') no-repeat center center / cover fixed; 
       }
     .oldschool-text {
       font-family: Arial, sans-serif;
@@ -22,12 +22,12 @@
 
   <table border="0" cellpadding="3" cellspacing="0">
     <tr>
-      <td align="right"><font face="arial" size="2">Текст:</font></td>
+      <td align="right"><font face="arial" size="2">текст:</font></td>
       <td>
         <input type="text" id="text-input" size="80" value="введи здесь текст">
       </td>
       <td rowspan="4" valign="top" style="padding-left: 20px;">
-        <font face="arial" size="2">Уже нанесенные надписи:</font><br>
+        <font face="arial" size="2">уже нанесенные надписи:</font><br>
         <select id="added-texts-list" size="5" style="width: 250px; font-family: arial; font-size: 12px;">
         </select>
         <br>
@@ -35,7 +35,7 @@
       </td>
     </tr>
     <tr>
-      <td align="right"><font face="arial" size="2">Размер:</font></td>
+      <td align="right"><font face="arial" size="2">размер:</font></td>
       <td>
         <select id="font-size-select" style="font-family: arial;">
           <option value="14">14</option>
@@ -51,17 +51,17 @@
       </td>
     </tr>
     <tr>
-      <td align="right"><font face="arial" size="2">Цвет:</font></td>
+      <td align="right"><font face="arial" size="2">цвет:</font></td>
       <td>
         <select id="text-color-select" style="font-family: arial;">
-          <option value="#ffffff" selected>Белый</option>
-          <option value="#000000">Черный</option>
-          <option value="#ff0000">Красный</option>
-          <option value="#808080">Серый</option>
-          <option value="#ffff00">Желтый</option>
-          <option value="#008000">Темно-зеленый</option>
-          <option value="#800000">Бордовый</option>
-          <option value="#000080">Темно-синий</option>
+          <option value="#ffffff" selected>белый</option>
+          <option value="#000000">черный</option>
+          <option value="#ff0000">красный</option>
+          <option value="#808080">серый</option>
+          <option value="#ffff00">желтый</option>
+          <option value="#008000">темно зеленый</option>
+          <option value="#800000">бордовый</option>
+          <option value="#000080">темно синий</option>
         </select>
       </td>
     </tr>
@@ -77,14 +77,6 @@
   <button id="download-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px;">
     СКАЧАТЬ ТВОРЕНИЕ!
   </button>
-  
-  <!-- ПРОСТАЯ ПЛАШКА БЕЗ СТИЛЕЙ -->
-  <div id="openvk-box" style="display: none; margin-top: 15px;">
-    <font face="arial" size="2">Текст для OpenVK:</font><br>
-    <input type="text" id="openvk-text-output" size="90" readonly>
-    <button id="copy-text-btn">Скопировать текст</button>
-  </div>
-  
   <br><br>
 
   <div id="preview-area" style="position: relative; display: inline-block; border: 1px solid #000000; cursor: crosshair; min-width: 320px; min-height: 240px; background-color: #ccc;">
@@ -119,11 +111,6 @@
     var canvas = document.getElementById('canvas-helper');
     var ctx = canvas.getContext('2d');
 
-    // Переменные для текста OpenVK
-    var openvkBox = document.getElementById('openvk-box');
-    var openvkTextOutput = document.getElementById('openvk-text-output');
-    var copyTextBtn = document.getElementById('copy-text-btn');
-
     var loadedImage = null;
     var savedCaptions = []; 
     var currentXPercent = 10;
@@ -146,7 +133,6 @@
           savedCaptions = []; 
           renderAllFixedCaptions();
           updateFloatingStyles();
-          openvkBox.style.display = 'none'; // Скрываем при выборе новой картинки
         };
         loadedImage.src = event.target.result;
       };
@@ -216,33 +202,3 @@
     textInput.oninput = updateFloatingStyles;
     textColorSelect.onchange = updateFloatingStyles;
     fontSizeSelect.onchange = updateFloatingStyles;
-
-    // Сбор текста и показ строки при клике на скачивание
-    downloadBtn.onclick = function() {
-      if (!loadedImage) return;
-      
-      // Склеиваем все надписи, которые добавлены на картинку
-      var allTexts = savedCaptions.map(function(cap) { return cap.text; }).join(' ');
-      
-      // Если на картинку ничего не прикрепили, берём то, что введено в поле прямо сейчас
-      if (allTexts.trim() === "" && textInput.value.trim() !== "") {
-        allTexts = textInput.value;
-      }
-
-      // Генерируем строку строго по правилу №8
-      var openvkFormattedText = "[" + allTexts + "]. еще больше мемов: котокартинка - https://openvk.org";
-      
-      // Выводим в поле и показываем блок
-      openvkTextOutput.value = openvkFormattedText;
-      openvkBox.style.display = 'block';
-    };
-
-    // Простое копирование текста в буфер обмена
-    copyTextBtn.onclick = function() {
-      openvkTextOutput.select();
-      openvkTextOutput.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-    };
-  </script>
-</body>
-</html>

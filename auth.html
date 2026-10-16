@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="windows-1251">
+    <title>КОТОКАРТИНКА: Вход и Регистрация</title>
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        body { background: #ccc; font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        .auth-form { background: #fff; border: 1px solid #000; padding: 20px; display: inline-block; }
+        input { display: block; margin: 10px auto; padding: 4px; font-family: arial; }
+        button { font-family: arial; font-weight: bold; padding: 3px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="auth-form">
+    <h2>Вход / Регистрация</h2>
+    <input type="text" id="user-login" size="30" placeholder="Логин">
+    <input type="password" id="user-pass" size="30" placeholder="Пароль">
+    <br>
+    <button id="btn-enter">ВОЙТИ</button>
+    <button id="btn-reg" style="margin-left: 10px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+    <br><br>
+    <a href="editor.html">Назад в редактор</a>
+</div>
+
+<script>
+const URL_БАЗЫ = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
+const КЛЮЧ_БАЗЫ = 'sb_secret_3SAGU8prEvSzxpCe_dOMMQ_u_TCAzm1'; 
+const соединение = supabase.createClient(URL_БАЗЫ, КЛЮЧ_БАЗЫ);
+
+const полеЛогина = document.getElementById('user-login');
+const poleParolya = document.getElementById('user-pass');
+
+// Кнопка регистрации
+document.getElementById('btn-reg').onclick = async function() {
+    var логин = poleLogina.value.trim();
+    var пароль = poleParolya.value.trim();
+    if(!логин || !пароль) return alert("Заполните поля!");
+
+    // Проверяем, занято ли имя
+    const { data: проверка } = await соединение
+        .from('kotokartinka_users')
+        .select('username')
+        .eq('username', логин);
+
+    if(проверка && проверка.length > 0) {
+        return alert("Такой котик уже есть в базе!");
+    }
+
+    // Добавляем запись
+    const { error } = await соединение
+        .from('kotokartinka_users')
+        .insert([{ username: логин, password: пароль }]);
+
+    if (error) {
+        alert("Ошибка: " + error.message);
+    } else {
+        alert("Котик успешно зарегистрирован! Теперь нажмите 'Войти'.");
+    }
+};
+
+// Кнопка входа
+document.getElementById('btn-enter').onclick = async function() {
+    var логин = poleLogina.value.trim();
+    var пароль = poleParolya.value.trim();
+    if(!логин || !пароль) return alert("Заполните поля!");
+
+    // Ищем котика по логину и паролю
+    const { data: юзер, error } = await соединение
+        .from('kotokartinka_users')
+        .select('*')
+        .eq('username', логин)
+        .eq('password', пароль);
+
+    if (error) {
+        alert("Ошибка: " + error.message);
+    } else if (юзер && юзер.length > 0) {
+        alert("Привет, " + логин + "!");
+        // Запоминаем пользователя в браузере
+        localStorage.setItem('current_cat_user', логин);
+        window.location.href = 'editor.html';
+    } else {
+        alert("Неверный логин или пароль!");
+    }
+};
+</script>
+</body>
+</html>
+

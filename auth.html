@@ -33,32 +33,47 @@ const полеЛогина = document.getElementById('user-login');
 const poleParolya = document.getElementById('user-pass');
 
 // Кнопка регистрации
+// Кнопка регистрации
 document.getElementById('btn-reg').onclick = async function() {
-    var логин = poleLogina.value.trim();
+    console.log("Клик по регистрации");
+    
+    var логин = полеЛогина.value.trim();
     var пароль = poleParolya.value.trim();
-    if(!логин || !пароль) return alert("Заполните поля!");
-
-    // Проверяем, занято ли имя
-    const { data: проверка } = await соединение
-        .from('kotokartinka_users')
-        .select('username')
-        .eq('username', логин);
-
-    if(проверка && проверка.length > 0) {
-        return alert("Такой котик уже есть в базе!");
+    
+    if(!логин || !пароль) {
+        alert("Заполните все поля!");
+        return;
     }
 
-    // Добавляем запись
-    const { error } = await соединение
-        .from('kotokartinka_users')
-        .insert([{ username: логин, password: пароль }]);
+    try {
+        // Проверяем, занято ли имя
+        const { data: проверка, error: ошибкаПроверки } = await соединение
+            .from('kotokartinka_users')
+            .select('username')
+            .eq('username', логин);
 
-    if (error) {
-        alert("Ошибка: " + error.message);
-    } else {
-        alert("Котик успешно зарегистрирован! Теперь нажмите 'Войти'.");
+        if (ошибкаПроверки) throw ошибкаПроверки;
+
+        if(проверка && проверка.length > 0) {
+            alert("Такой котик уже есть в базе!");
+            return;
+        }
+
+        // Добавляем запись в таблицу
+        const { error: ошибкаВставки } = await соединение
+            .from('kotokartinka_users')
+            .insert([{ username: логин, password: пароль }]);
+
+        if (ошибкаВставки) throw ошибкаВставки;
+
+        alert("Юзер успешно зарегистрирован! Теперь введите пароль и нажмите 'Войти'.");
+
+    } catch (err) {
+        console.error(err);
+        alert("Ошибка Supabase: " + err.message);
     }
 };
+
 
 // Кнопка входа
 document.getElementById('btn-enter').onclick = async function() {

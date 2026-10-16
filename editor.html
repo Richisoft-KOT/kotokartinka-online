@@ -78,6 +78,9 @@
     СКАЧАТЬ ТВОРЕНИЕ!
   </button>
   <br><br>
+<button id="publish-btn" style="font-family: arial; font-size: 14px; font-weight: bold; padding: 4px 10px; margin-left: 10px;">
+  ОПУБЛИКОВАТЬ НА САЙТЕ!
+</button>
 
   <div id="preview-area" style="position: relative; display: inline-block; border: 1px solid #000000; cursor: crosshair; min-width: 320px; min-height: 240px; background-color: #ccc;">
     <span id="placeholder-text" style="font-family: arial; font-size: 13px; padding: 10px; display: block;">[ сначала выбери картинку ]</span>
@@ -247,6 +250,54 @@
       link.href = canvas.toDataURL('image/jpg');
       link.click();
     };
+      // Инициализация Supabase (замените на свои ключи)
+const SUPABASE_URL = 'https://supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key-here';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+var publishBtn = document.getElementById('publish-btn');
+
+publishBtn.onclick = async function() {
+  if (!loadedImage) return alert('Сначала выберите и отредактируйте картинку!');
+
+  publishBtn.innerText = "ПУБЛИКУЕМ...";
+  publishBtn.disabled = true;
+
+  try {
+    // 1. Кодируем canvas в строку Base64 (точно так же, как в вашем первом тесте)
+    var base64Image = canvas.toDataURL('image/jpeg', 0.85);
+
+    // Формируем текст поста, например: "Текст: [содержимое инпута]"
+    var postText = textInput.value || 'Новая котокартинка';
+
+    // 2. Отправляем запись напрямую в вашу существующую таблицу
+    const { data, error } = await supabase
+      .from('kotokartinka_posts')
+      .insert([
+        { 
+          text: postText, 
+          image: base64Image 
+        }
+      ])
+      .select();
+
+    if (error) throw error;
+
+    alert('Ура! Котокартинка успешно опубликована!');
+    
+    // Перенаправляем на страницу просмотра (передаем ID созданного поста)
+    // У вас ID имеет тип int8 (например, 1, 2, 3), так что ссылка будет красивой
+    window.location.href = 'post.html?id=' + data[0].id;
+
+  } catch (error) {
+    console.error('Ошибка при публикации:', error);
+    alert('Не удалось опубликовать картинку: ' + error.message);
+  } finally {
+    publishBtn.innerText = "ОПУБЛИКОВАТЬ НА САЙТЕ!";
+    publishBtn.disabled = false;
+  }
+};
+
   </script>
 </body>
 </html>

@@ -2,104 +2,107 @@
 <html lang="ru">
 <head>
     <meta charset="windows-1251">
-    <title>КОТОКАРТИНКА: Вход и регистрация</title>
+    <title>Авторизация</title>
     <script src="https://jsdelivr.net"></script>
     <style>
-        body { background: url('https://github.com/user-attachments/assets/3d317e0d-8cee-44b5-baed-0012191ebc75') no-repeat center center / cover fixed; }
-        .auth-form { background: #fff; border: 1px solid #000; padding: 20px; display: inline-block; }
+        body { background: #ccc; font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        .auth-container { background: #fff; border: 1px solid #000; padding: 20px; display: inline-block; }
         input { display: block; margin: 10px auto; padding: 4px; font-family: arial; }
         button { font-family: arial; font-weight: bold; padding: 3px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="auth-form">
+<div class="auth-container">
     <h2>Вход / Регистрация</h2>
-    <input type="text" id="user-login" size="30" placeholder="Логин">
-    <input type="password" id="user-pass" size="30" placeholder="Пароль">
+    <input type="text" id="credential-login" size="30" placeholder="Логин">
+    <input type="password" id="credential-pass" size="30" placeholder="Пароль">
     <br>
-    <button id="btn-enter">ВОЙТИ</button>
-    <button id="btn-reg" style="margin-left: 10px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+    <button id="action-login">ВОЙТИ</button>
+    <button id="action-register" style="margin-left: 10px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
     <br><br>
-    <a href="/">На главную</a>
+    <a href="index.html">На главную</a>
 </div>
 
 <script>
-const URL_БАЗЫ = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
-const КЛЮЧ_БАЗЫ = 'sb_secret_3SAGU8prEvSzxpCe_dOMMQ_u_TCAzm1'; 
-const соединение = supabase.createClient(URL_БАЗЫ, КЛЮЧ_БАЗЫ);
+const DB_ENDPOINT = 'https://supabase.co'; 
+const DB_PUBLIC_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
 
-const полеЛогина = document.getElementById('user-login');
-const poleParolya = document.getElementById('user-pass');
+const dbConnection = supabase.createClient(DB_ENDPOINT, DB_PUBLIC_KEY);
 
-// Кнопка регистрации
-// Кнопка регистрации
-document.getElementById('btn-reg').onclick = async function() {
-    console.log("Клик по регистрации");
+const elLogin = document.getElementById('credential-login');
+const elPass = document.getElementById('credential-pass');
+
+// Обработчик для регистрации нового аккаунта
+document.getElementById('action-register').onclick = async function() {
+    var strUser = elLogin.value.trim();
+    var strPass = elPass.value.trim();
     
-    var логин = полеЛогина.value.trim();
-    var пароль = poleParolya.value.trim();
-    
-    if(!логин || !пароль) {
-        alert("Заполните все поля!");
+    if(!strUser || !strPass) {
+        alert("Заполните все обязательные поля (Логин и Пароль).");
         return;
     }
 
     try {
-        // Проверяем, занято ли имя
-        const { data: проверка, error: ошибкаПроверки } = await соединение
+        const { data: fetchResult, error: fetchError } = await dbConnection
             .from('kotokartinka_users')
             .select('username')
-            .eq('username', логин);
+            .eq('username', strUser);
 
-        if (ошибкаПроверки) throw ошибкаПроверки;
+        if (fetchError) throw fetchError;
 
-        if(проверка && проверка.length > 0) {
-            alert("Такой котик уже есть в базе!");
+        if(fetchResult && fetchResult.length > 0) {
+            alert("Пользователь с таким именем уже зарегистрирован в системе.");
             return;
         }
 
-        // Добавляем запись в таблицу
-        const { error: ошибкаВставки } = await соединение
+        const { error: insertError } = await dbConnection
             .from('kotokartinka_users')
-            .insert([{ username: логин, password: пароль }]);
+            .insert([{ username: strUser, password: strPass }]);
 
-        if (ошибкаВставки) throw ошибкаВставки;
+        if (insertError) throw insertError;
 
-        alert("Юзер успешно зарегистрирован! Теперь введите пароль и нажмите 'Войти'.");
+        alert("Регистрация успешно завершена. Вы можете выполнить вход.");
 
     } catch (err) {
         console.error(err);
-        alert("Ошибка Supabase: " + err.message);
+        alert("Ошибка работы с базой данных: " + err.message);
     }
 };
 
+// Обработчик для авторизации существующего аккаунта
+document.getElementById('action-login').onclick = async function() {
+    var strUser = elLogin.value.trim();
+    var strPass = elPass.value.trim();
+    
+    if(!strUser || !strPass) {
+        alert("Введите логин и пароль для аутентификации.");
+        return;
+    }
 
-// Кнопка входа
-document.getElementById('btn-enter').onclick = async function() {
-    var логин = poleLogina.value.trim();
-    var пароль = poleParolya.value.trim();
-    if(!логин || !пароль) return alert("Заполните поля!");
+    try {
+        const { data: authResult, error: authError } = await dbConnection
+            .from('kotokartinka_users')
+            .select('*')
+            .eq('username', strUser)
+            .eq('password', strPass);
 
-    // Ищем котика по логину и паролю
-    const { data: юзер, error } = await соединение
-        .from('kotokartinka_users')
-        .select('*')
-        .eq('username', логин)
-        .eq('password', пароль);
+        if (authError) throw authError;
 
-    if (error) {
-        alert("Ошибка: " + error.message);
-    } else if (юзер && юзер.length > 0) {
-        alert("Привет, " + логин + "!");
-        // Запоминаем пользователя в браузере
-        localStorage.setItem('current_cat_user', логин);
-        window.location.href = 'editor.html';
-    } else {
-        alert("Неверный логин или пароль!");
+        if (authResult && authResult.length > 0) {
+            alert("Авторизация выполнена успешно.");
+            
+            localStorage.setItem('current_cat_user', strUser);
+            window.location.href = 'index.html';
+        } else {
+            alert("Указан неверный логин или пароль.");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Ошибка работы с базой данных: " + err.message);
     }
 };
 </script>
 </body>
 </html>
-

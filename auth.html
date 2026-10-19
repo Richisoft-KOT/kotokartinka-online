@@ -3,104 +3,89 @@
 <head>
     <meta charset="windows-1251">
     <title>Авторизация</title>
-    <script src="https://jsdelivr.net"></script>
+    <!-- Подключение через альтернативное зеркало unpkg для обхода таймаута -->
+    <script src="https://unpkg.com"></script>
     <style>
         body { background: #ccc; font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-        .auth-container { background: #fff; border: 1px solid #000; padding: 20px; display: inline-block; }
+        .box { background: #fff; border: 1px solid #000; padding: 20px; display: inline-block; }
         input { display: block; margin: 10px auto; padding: 4px; font-family: arial; }
         button { font-family: arial; font-weight: bold; padding: 3px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="auth-container">
+<div class="box">
     <h2>Вход / Регистрация</h2>
-    <input type="text" id="credential-login" size="30" placeholder="Логин">
-    <input type="password" id="credential-pass" size="30" placeholder="Пароль">
+    <input type="text" id="u-login" size="30" placeholder="Логин">
+    <input type="password" id="u-pass" size="30" placeholder="Пароль">
     <br>
-    <button id="action-login">ВОЙТИ</button>
-    <button id="action-register" style="margin-left: 10px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+    <button id="b-enter">ВОЙТИ</button>
+    <button id="b-reg" style="margin-left: 10px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
     <br><br>
     <a href="index.html">На главную</a>
 </div>
 
 <script>
-const DB_ENDPOINT = 'https://supabase.com/dashboard/project/qcdvfeyolqwgmknrjakr'; 
-const DB_PUBLIC_KEY = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
+// Параметры подключения к вашему проекту
+const host = 'https://supabase.co'; 
+const key = 'sb_publishable_1Zxs_9yRDVRr1DTfyck8WA_v8VUst77'; 
 
-const dbConnection = supabase.createClient(DB_ENDPOINT, DB_PUBLIC_KEY);
+// Создание экземпляра клиента
+const client = supabase.createClient(host, key);
 
-const elLogin = document.getElementById('credential-login');
-const elPass = document.getElementById('credential-pass');
+const inputL = document.getElementById('u-login');
+const inputP = document.getElementById('u-pass');
 
-// Обработчик для регистрации нового аккаунта
-document.getElementById('action-register').onclick = async function() {
-    var strUser = elLogin.value.trim();
-    var strPass = elPass.value.trim();
-    
-    if(!strUser || !strPass) {
-        alert("Заполните все обязательные поля (Логин и Пароль).");
-        return;
-    }
+// Логика кнопки регистрации
+document.getElementById('b-reg').onclick = async function() {
+    var l = inputL.value.trim();
+    var p = inputP.value.trim();
+    if(!l || !p) return alert("Заполните все поля.");
 
     try {
-        const { data: fetchResult, error: fetchError } = await dbConnection
+        const { data: rows, error: e1 } = await client
             .from('kotokartinka_users')
             .select('username')
-            .eq('username', strUser);
+            .eq('username', l);
 
-        if (fetchError) throw fetchError;
+        if (e1) throw e1;
+        if (rows && rows.length > 0) return alert("Пользователь уже существует.");
 
-        if(fetchResult && fetchResult.length > 0) {
-            alert("Пользователь с таким именем уже зарегистрирован в системе.");
-            return;
-        }
-
-        const { error: insertError } = await dbConnection
+        const { error: e2 } = await client
             .from('kotokartinka_users')
-            .insert([{ username: strUser, password: strPass }]);
+            .insert([{ username: l, password: p }]);
 
-        if (insertError) throw insertError;
-
-        alert("Регистрация успешно завершена. Вы можете выполнить вход.");
-
+        if (e2) throw e2;
+        alert("Регистрация завершена.");
     } catch (err) {
-        console.error(err);
-        alert("Ошибка работы с базой данных: " + err.message);
+        alert("Ошибка: " + err.message);
     }
 };
 
-// Обработчик для авторизации существующего аккаунта
-document.getElementById('action-login').onclick = async function() {
-    var strUser = elLogin.value.trim();
-    var strPass = elPass.value.trim();
-    
-    if(!strUser || !strPass) {
-        alert("Введите логин и пароль для аутентификации.");
-        return;
-    }
+// Логика кнопки входа
+document.getElementById('b-enter').onclick = async function() {
+    var l = inputL.value.trim();
+    var p = inputP.value.trim();
+    if(!l || !p) return alert("Введите данные.");
 
     try {
-        const { data: authResult, error: authError } = await dbConnection
+        const { data: rows, error: e3 } = await client
             .from('kotokartinka_users')
             .select('*')
-            .eq('username', strUser)
-            .eq('password', strPass);
+            .eq('username', l)
+            .eq('password', p);
 
-        if (authError) throw authError;
+        if (e3) throw e3;
 
-        if (authResult && authResult.length > 0) {
-            alert("Авторизация выполнена успешно.");
-            
-            localStorage.setItem('current_cat_user', strUser);
+        if (rows && rows.length > 0) {
+            alert("Вход выполнен.");
+            localStorage.setItem('current_cat_user', l);
             window.location.href = 'index.html';
         } else {
-            alert("Указан неверный логин или пароль.");
+            alert("Неверный логин или пароль.");
         }
-
     } catch (err) {
-        console.error(err);
-        alert("Ошибка работы с базой данных: " + err.message);
+        alert("Ошибка: " + err.message);
     }
 };
 </script>
